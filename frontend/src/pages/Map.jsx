@@ -6,6 +6,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import RoutePlanner from '@/components/RoutePlanner'
+import BottomNav from '@/components/BottomNav'
 
 // --- Correctif indispensable avec un bundler (Vite) ---
 // Leaflet construit les URL de ses images de marqueur par défaut à partir du
@@ -132,14 +133,16 @@ export default function MapPage() {
         <RoutePlanner userPosition={position} onRouteChange={setRoute} />
       </div>
 
-      {/* Bandeau de statut, déplacé en bas pour ne pas gêner le panneau */}
+      {/* Bandeau de statut, remonté pour ne pas passer sous la barre de navigation */}
       {status !== 'ok' && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[1000] flex justify-center px-4">
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-[1000] flex justify-center px-4">
           <p className="rounded-xl border border-border bg-card/95 px-4 py-2 text-sm text-foreground shadow-lg">
             {message}
           </p>
         </div>
       )}
+
+      <BottomNav />
     </div>
   )
 }
