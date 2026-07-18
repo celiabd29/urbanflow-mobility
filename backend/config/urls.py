@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from .health import health_view
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Routes d'authentification de l'app users, préfixées par /api/auth/.
@@ -25,4 +27,6 @@ urlpatterns = [
     path('api/routing/', include('routing.urls')),
     # APIs de transport : vélos en libre-service et perturbations (Sprint 3).
     path('api/transport/', include('transport.urls')),
+    # Diagnostic : quelle base tourne réellement en production.
+    path('api/health/', health_view, name='health'),
 ]
