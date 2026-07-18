@@ -68,25 +68,40 @@ def _index_lines_by_disruption(lines):
     """
     index = {}
     for line in lines:
+        line_id = line.get("id")
         summary = {
-            "line_id": line.get("id"),
+            "line_id": line_id,
             "name": line.get("shortName") or line.get("name"),
             "mode": line.get("mode"),
         }
         for impacted in line.get("impactedObjects") or []:
             for disruption_id in impacted.get("disruptionIds") or []:
-                index.setdefault(disruption_id, []).append(summary)
-    return index
+                # Une ligne peut avoir plusieurs objets impactés (variantes de
+                # parcours) pointant vers la même perturbation : on dédoublonne
+                # sur l'identifiant de ligne pour ne pas l'afficher N fois.
+                per_disruption = index.setdefault(disruption_id, {})
+                per_disruption.setdefault(line_id, summary)
+    return {
+        disruption_id: list(lines_by_id.values())
+        for disruption_id, lines_by_id in index.items()
+    }
 
 
 def _wanted_prim_modes(modes):
-    """Convertit les modes du profil utilisateur en modes PRIM."""
+    """
+    Convertit les modes du profil utilisateur en modes PRIM.
+
+    Renvoie None seulement si aucun mode n'est demandé (= pas de filtre).
+    Un ensemble vide est une réponse légitime : un profil « vélo » ou
+    « voiture » ne correspond à aucun réseau de transport en commun, et doit
+    donc ne remonter aucune perturbation — surtout pas toutes.
+    """
     if not modes:
         return None  # aucun filtre : on renvoie tous les modes
     wanted = set()
     for mode in modes:
         wanted |= MODE_MAPPING.get(mode.strip().lower(), set())
-    return wanted or None
+    return wanted
 
 
 def current_disruptions(modes=None, limit=50):

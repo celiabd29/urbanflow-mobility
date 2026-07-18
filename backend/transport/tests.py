@@ -59,8 +59,12 @@ def _prim_payload(active=True):
                 "name": "RER A",
                 "shortName": "A",
                 "mode": "RER",
+                # Plusieurs objets impactés pointant vers la même perturbation :
+                # cas réel observé en production (variantes de parcours).
                 "impactedObjects": [
-                    {"type": "line", "disruptionIds": ["disruption-1"]}
+                    {"type": "line", "disruptionIds": ["disruption-1"]},
+                    {"type": "line", "disruptionIds": ["disruption-1"]},
+                    {"type": "line", "disruptionIds": ["disruption-1"]},
                 ],
             }
         ],
@@ -181,6 +185,33 @@ class TransportEndpointsTests(APITestCase):
             response = self.client.get(self.disruptions_url, {"modes": "bus"})
 
         self.assertEqual(response.data["total"], 0)
+
+    @patch("transport.services.disruptions.fetch_json")
+    def test_disruptions_deduplicate_lines(self, mock_fetch):
+        """Une ligne citée par plusieurs objets impactés n'apparaît qu'une fois."""
+        mock_fetch.return_value = _prim_payload(active=True)
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            response = self.client.get(self.disruptions_url, {"modes": "rail"})
+
+        lines = response.data["disruptions"][0]["lines"]
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0]["name"], "A")
+
+    @patch("transport.services.disruptions.fetch_json")
+    def test_disruptions_empty_for_modes_without_network(self, mock_fetch):
+        """
+        Vélo et voiture ne correspondent à aucun réseau : on ne doit rien
+        renvoyer, surtout pas l'intégralité des perturbations.
+        """
+        mock_fetch.return_value = _prim_payload(active=True)
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            for mode in ("bike", "car", "walk"):
+                response = self.client.get(self.disruptions_url, {"modes": mode})
+                self.assertEqual(response.data["total"], 0, f"mode={mode}")
 
     @patch("transport.services.disruptions.fetch_json")
     def test_disruptions_fall_back_to_user_profile_modes(self, mock_fetch):
