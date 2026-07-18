@@ -5,6 +5,7 @@ import Register from '@/pages/Register'
 import Home from '@/pages/Home'
 import MapPage from '@/pages/Map'
 import MobilityProfile from '@/pages/MobilityProfile'
+import CarbonFootprint from '@/pages/CarbonFootprint'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -31,6 +32,15 @@ function App() {
         element={
           <RequireAuth>
             <MapPage />
+          </RequireAuth>
+        }
+      />
+      {/* Bilan carbone mensuel (Sprint 4). */}
+      <Route
+        path="/carbone"
+        element={
+          <RequireAuth>
+            <CarbonFootprint />
           </RequireAuth>
         }
       />

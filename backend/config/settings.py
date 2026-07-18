@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'users',
     'routing',
     'transport',
+    'carbon',
 ]
 
 MIDDLEWARE = [

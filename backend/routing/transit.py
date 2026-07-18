@@ -74,8 +74,14 @@ def _normalise_section(section, disruptions_by_id):
     display = section.get("display_informations") or {}
     coordinates = _to_leaflet((section.get("geojson") or {}).get("coordinates"))
 
+    # La longueur vit dans les propriétés du GeoJSON, pour toutes les sections
+    # y compris le transport en commun. Indispensable au calcul d'empreinte
+    # carbone, qui raisonne en distance et non en durée.
+    properties = ((section.get("geojson") or {}).get("properties") or [{}])[0]
+
     common = {
         "duration_s": section.get("duration", 0),
+        "distance_m": properties.get("length"),
         "from": (section.get("from") or {}).get("name"),
         "to": (section.get("to") or {}).get("name"),
         "coordinates": coordinates,
@@ -116,9 +122,6 @@ def _normalise_section(section, disruptions_by_id):
             **common,
             "type": "walking",
             "mode": section.get("mode", "walking"),
-            "distance_m": section.get("geojson", {}).get("properties", [{}])[0].get(
-                "length"
-            ),
         }
 
     # transfer, waiting, etc. : on les garde pour afficher les étapes fidèlement.
