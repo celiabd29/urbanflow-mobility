@@ -3,6 +3,7 @@ import { ArrowUpDown, Crosshair, Loader2, MapPin, Navigation } from 'lucide-reac
 import { Button } from '@/components/ui/button'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
+import JourneySteps from '@/components/JourneySteps'
 import {
   PROFILE_LABELS,
   extractError,
@@ -166,10 +167,18 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
         Planifier un itinéraire
       </h2>
 
-      {/* Perturbations du réseau. Sans prop 'modes', le backend s'appuie sur
-          le profil de mobilité de l'utilisateur connecté. */}
+      {/* Perturbations. Pour un trajet en transport en commun, on connaît les
+          lignes empruntées : l'alerte porte alors sur l'itinéraire lui-même.
+          Sinon (trajets ORS), elle ne peut porter que sur les modes du profil. */}
       <div className="mb-3">
-        <DisruptionAlert />
+        {result?.route_disruptions_known ? (
+          <DisruptionAlert
+            routeDisruptions={result.journeys?.[0]?.disruptions || []}
+            routeTotal={result.journeys?.[0]?.disruptions_total || 0}
+          />
+        ) : (
+          <DisruptionAlert />
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -263,6 +272,9 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
           </div>
         </div>
       )}
+
+      {/* Étapes détaillées, pour les trajets en transport en commun. */}
+      {result?.journeys?.[0] && <JourneySteps journey={result.journeys[0]} />}
 
       {/* Disponibilité des vélos : affichée uniquement pour un trajet à vélo,
           aux deux extrémités — les segments réellement concernés. */}
