@@ -3,6 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npx serve dist"
+    "startCommand": "npx serve dist --single"
   }
 }
