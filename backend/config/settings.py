@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # Local
     'users',
+    'routing',
 ]
 
 MIDDLEWARE = [
@@ -151,6 +152,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# OpenRouteService : clé lue depuis le .env, jamais exposée au frontend.
+ORS_API_KEY = os.environ.get('ORS_API_KEY', '')
 
 # CORS
 CORS_ALLOWED_ORIGINS = [

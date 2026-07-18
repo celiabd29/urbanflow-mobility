@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Routes d'authentification de l'app users, préfixées par /api/auth/.
     path('api/auth/', include('users.urls')),
+    # Proxy itinéraires (Sprint 2).
+    path('api/routing/', include('routing.urls')),
 ]
