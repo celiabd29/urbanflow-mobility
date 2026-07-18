@@ -1,58 +1,19 @@
+'use client'
+
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, Mail, Route, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import api, { tokenStore } from '@/lib/api'
 
-export default function Register() {
-  const navigate = useNavigate()
+export function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    password: '',
-    password2: '',
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  // Fabrique un handler onChange pour une clé donnée du formulaire.
-  const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
-
-  // Soumission : validation locale du mot de passe puis appel API register.
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    if (form.password !== form.password2) {
-      setError('Les mots de passe ne correspondent pas.')
-      return
-    }
-    setLoading(true)
-    try {
-      // L'inscription renvoie désormais une paire de tokens : on connecte
-      // l'utilisateur directement, sans passer par l'écran de connexion.
-      const { data } = await api.post('/auth/register/', form)
-      tokenStore.set(data)
-      navigate('/onboarding/mobility')
-    } catch (err) {
-      const d = err.response?.data
-      // DRF renvoie { champ: ["message"] } : on affiche la 1re erreur.
-      const first = d && typeof d === 'object' ? Object.values(d)[0] : null
-      setError(Array.isArray(first) ? first[0] : first || "Échec de l'inscription.")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
-    // Même conteneur mobile centré que Login (min-h-screen pour caler le lien du bas).
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-7 pb-8 pt-16">
-      {/* Espace pour la barre de statut */}
+    <div className="flex h-full flex-col overflow-y-auto px-7 pb-8 pt-16">
+      {/* Status bar spacer */}
       <div className="h-4" />
 
-      {/* Logo + titre */}
+      {/* Logo + heading */}
       <header className="mt-4 flex flex-col items-center text-center">
         <div className="flex size-16 items-center justify-center rounded-3xl bg-primary shadow-[0_16px_40px_-12px_rgba(29,158,117,0.7)]">
           <Route className="size-8 text-primary-foreground" strokeWidth={2.25} aria-hidden="true" />
@@ -65,15 +26,11 @@ export default function Register() {
         </p>
       </header>
 
-      {/* Bannière d'erreur */}
-      {error && (
-        <p className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-
-      {/* Formulaire */}
-      <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+      {/* Form */}
+      <form
+        className="mt-8 flex flex-col gap-4"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <div className="flex gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
             <label htmlFor="firstName" className="text-xs font-medium text-muted-foreground">
@@ -85,8 +42,6 @@ export default function Register() {
                 id="firstName"
                 type="text"
                 autoComplete="given-name"
-                value={form.first_name}
-                onChange={update('first_name')}
                 placeholder="Camille"
                 className="h-13 w-full rounded-2xl border border-border bg-input/60 py-3.5 pl-11 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
               />
@@ -101,8 +56,6 @@ export default function Register() {
               id="lastName"
               type="text"
               autoComplete="family-name"
-              value={form.last_name}
-              onChange={update('last_name')}
               placeholder="Durand"
               className="h-13 w-full rounded-2xl border border-border bg-input/60 px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
@@ -120,9 +73,6 @@ export default function Register() {
               type="email"
               inputMode="email"
               autoComplete="email"
-              required
-              value={form.email}
-              onChange={update('email')}
               placeholder="vous@urbanflow.app"
               className="h-13 w-full rounded-2xl border border-border bg-input/60 py-3.5 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
@@ -139,9 +89,6 @@ export default function Register() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              required
-              value={form.password}
-              onChange={update('password')}
               placeholder="8 caractères minimum"
               className="h-13 w-full rounded-2xl border border-border bg-input/60 py-3.5 pl-11 pr-11 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
@@ -166,9 +113,6 @@ export default function Register() {
               id="confirmPassword"
               type={showConfirm ? 'text' : 'password'}
               autoComplete="new-password"
-              required
-              value={form.password2}
-              onChange={update('password2')}
               placeholder="Retapez votre mot de passe"
               className="h-13 w-full rounded-2xl border border-border bg-input/60 py-3.5 pl-11 pr-11 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
@@ -185,19 +129,18 @@ export default function Register() {
 
         <Button
           type="submit"
-          disabled={loading}
           className="mt-3 h-13 rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-[0_12px_28px_-10px_rgba(29,158,117,0.8)] hover:bg-primary/90"
         >
-          {loading ? 'Création…' : 'Créer mon compte'}
+          Créer mon compte
         </Button>
       </form>
 
-      {/* Lien vers la connexion (React Router) */}
+      {/* Sign in link */}
       <p className="mt-auto pt-8 text-center text-sm text-muted-foreground">
         {'Déjà un compte ? '}
-        <Link to="/login" className="font-semibold text-primary transition hover:opacity-80">
+        <button type="button" className="font-semibold text-primary transition hover:opacity-80">
           Se connecter
-        </Link>
+        </button>
       </p>
     </div>
   )
