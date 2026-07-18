@@ -3,6 +3,7 @@ import { tokenStore } from '@/lib/api'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import Home from '@/pages/Home'
+import MapPage from '@/pages/Map'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -20,6 +21,15 @@ function App() {
         element={
           <RequireAuth>
             <Home />
+          </RequireAuth>
+        }
+      />
+      {/* Carte interactive (Sprint 2), protégée comme le reste de l'app. */}
+      <Route
+        path="/map"
+        element={
+          <RequireAuth>
+            <MapPage />
           </RequireAuth>
         }
       />
