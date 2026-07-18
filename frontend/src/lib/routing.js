@@ -7,6 +7,9 @@ export const PROFILE_LABELS = {
   'cycling-regular': 'Vélo',
   'driving-car': 'Voiture',
   wheelchair: 'Accessible',
+  // Servi par PRIM (moteur Navitia) et non par ORS : marche + transport
+  // en commun, limité à l'Île-de-France.
+  transit: 'Transports',
 }
 
 /**
