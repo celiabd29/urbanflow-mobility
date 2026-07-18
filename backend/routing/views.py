@@ -4,7 +4,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from transport.services.base import TransportAPIError
+
 from .services import ALLOWED_PROFILES, RoutingError, directions, geocode
+from .transit import journeys as transit_journeys
+
+# Profil supplémentaire, servi par PRIM et non par ORS : marche + transport
+# en commun. Seul ce mode permet de rattacher les perturbations à l'itinéraire
+# réellement emprunté, puisqu'il contient des lignes.
+TRANSIT_PROFILE = 'transit'
 
 
 @api_view(['GET'])
@@ -50,16 +58,51 @@ def directions_view(request):
                 status=400,
             )
 
+    # Transport en commun : moteur PRIM/Navitia au lieu d'ORS.
+    if profile == TRANSIT_PROFILE:
+        try:
+            options = transit_journeys(list(start), list(end))
+        except TransportAPIError as exc:
+            return Response(
+                {'detail': exc.message, 'source': exc.source},
+                status=getattr(exc, 'status', 503),
+            )
+
+        best = options[0]
+        return Response(
+            {
+                'provider': 'prim',
+                # Champs conservés pour rester compatible avec l'affichage
+                # existant, alimentés par la meilleure proposition.
+                'distance_m': None,
+                'duration_s': best['duration_s'],
+                'coordinates': best['coordinates'],
+                'journeys': options,
+                # Les trajets contiennent des lignes : les perturbations
+                # renvoyées concernent bien CET itinéraire.
+                'route_disruptions_known': True,
+            }
+        )
+
     try:
         result = directions(list(start), list(end), profile)
     except RoutingError as exc:
         return Response({'detail': exc.message}, status=exc.status)
 
-    return Response(result)
+    return Response(
+        {
+            **result,
+            'provider': 'ors',
+            # Un itinéraire ORS ne contient aucune ligne de transport : on ne
+            # peut pas savoir si une perturbation le concerne.
+            'route_disruptions_known': False,
+        }
+    )
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profiles_view(request):
     """GET /api/routing/profiles/ -> modes disponibles (évite de les figer côté front)."""
-    return Response({'profiles': sorted(ALLOWED_PROFILES)})
+    # 'transit' n'est pas un profil ORS : il est servi par PRIM.
+    return Response({'profiles': sorted(ALLOWED_PROFILES | {TRANSIT_PROFILE})})
