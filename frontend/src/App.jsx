@@ -6,6 +6,8 @@ import Home from '@/pages/Home'
 import MapPage from '@/pages/Map'
 import MobilityProfile from '@/pages/MobilityProfile'
 import CarbonFootprint from '@/pages/CarbonFootprint'
+import Trips from '@/pages/Trips'
+import Profile from '@/pages/Profile'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -32,6 +34,23 @@ function App() {
         element={
           <RequireAuth>
             <MapPage />
+          </RequireAuth>
+        }
+      />
+      {/* Onglets de la barre de navigation. */}
+      <Route
+        path="/trajets"
+        element={
+          <RequireAuth>
+            <Trips />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/profil"
+        element={
+          <RequireAuth>
+            <Profile />
           </RequireAuth>
         }
       />
