@@ -88,10 +88,26 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# En prod : PostgreSQL si les variables PG* sont définies.
-# En dev local : bascule automatique sur SQLite si PGDATABASE est absent,
-# pour pouvoir travailler sans serveur PostgreSQL installé.
-if os.environ.get('PGDATABASE'):
+# Sélection de la base, par ordre de priorité :
+#   1. DATABASE_URL  — variable standard fournie par Railway, Heroku, etc.
+#                      C'est celle qu'injecte le service PostgreSQL de Railway.
+#   2. variables PG* séparées — utile si on les définit à la main.
+#   3. SQLite — uniquement pour le développement local.
+#
+# Attention : sur Railway, SQLite vit sur un disque éphémère. Toute donnée
+# écrite dedans disparaît au redéploiement suivant, d'où l'avertissement
+# explicite plus bas si on y retombe hors DEBUG.
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ['DATABASE_URL'],
+            conn_max_age=600,  # connexions persistantes
+        )
+    }
+    DATABASE_SOURCE = 'DATABASE_URL'
+elif os.environ.get('PGDATABASE'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -100,8 +116,10 @@ if os.environ.get('PGDATABASE'):
             'PASSWORD': os.environ.get('PGPASSWORD'),
             'HOST': os.environ.get('PGHOST'),
             'PORT': os.environ.get('PGPORT', '5432'),
+            'CONN_MAX_AGE': 600,
         }
     }
+    DATABASE_SOURCE = 'variables PG*'
 else:
     DATABASES = {
         'default': {
@@ -109,6 +127,25 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    DATABASE_SOURCE = 'SQLite (local)'
+
+    if not DEBUG:
+        # En production, retomber sur SQLite signifie perdre toutes les
+        # données au prochain déploiement. On le signale très visiblement
+        # dans les logs plutôt que de le laisser passer inaperçu.
+        import sys
+
+        print(
+            '\n'
+            '========================================================\n'
+            'ALERTE : aucune base PostgreSQL configurée en production.\n'
+            'Django utilise SQLite sur un disque ÉPHÉMÈRE : toutes les\n'
+            'données seront perdues au prochain déploiement.\n'
+            "Définissez DATABASE_URL (ou les variables PG*) sur l'hébergeur.\n"
+            '========================================================\n',
+            file=sys.stderr,
+            flush=True,
+        )
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
