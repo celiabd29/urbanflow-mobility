@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogOut, Map as MapIcon } from 'lucide-react'
 import api, { tokenStore } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 
@@ -32,9 +32,20 @@ export default function Home() {
           <span className="font-medium text-foreground">{me.email}</span>
         </p>
       )}
+      {/* Action principale : accès à la carte (un <Link> et non un <button>,
+          pour permettre l'ouverture dans un nouvel onglet). */}
+      <Link
+        to="/map"
+        className="mt-2 flex h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+      >
+        <MapIcon className="size-4" aria-hidden="true" /> Ouvrir la carte
+      </Link>
+
+      {/* Action secondaire */}
       <Button
+        variant="ghost"
         onClick={logout}
-        className="mt-2 h-11 gap-2 rounded-2xl bg-primary px-5 text-primary-foreground hover:bg-primary/90"
+        className="h-10 gap-2 rounded-2xl px-4 text-muted-foreground"
       >
         <LogOut className="size-4" /> Se déconnecter
       </Button>
