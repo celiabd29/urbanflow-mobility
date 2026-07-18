@@ -20,10 +20,13 @@ class TransportAPIError(Exception):
     lisible, plutôt que de laisser remonter une 500 opaque.
     """
 
-    def __init__(self, message, source=None):
+    def __init__(self, message, source=None, status=503):
         super().__init__(message)
         self.message = message
         self.source = source
+        # 503 par défaut (panne externe). Certains cas méritent un autre code,
+        # par exemple 404 quand aucun itinéraire n'existe dans la zone couverte.
+        self.status = status
 
 
 def fetch_json(url, *, params=None, headers=None, cache_key=None, source=None):
