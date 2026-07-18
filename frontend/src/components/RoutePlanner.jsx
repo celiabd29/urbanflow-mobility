@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
 import JourneySteps from '@/components/JourneySteps'
+import { formatCo2, routeToSegments, saveTrajet } from '@/lib/carbon'
+import { Leaf } from 'lucide-react'
 import {
   PROFILE_LABELS,
   extractError,
@@ -110,6 +112,9 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Empreinte du trajet une fois démarré (Sprint 4).
+  const [footprint, setFootprint] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   // Les modes viennent du serveur ; repli sur la liste locale si l'appel échoue.
   useEffect(() => {
@@ -145,6 +150,7 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
     }
 
     setLoading(true)
+    setFootprint(null) // un nouveau calcul invalide l'empreinte précédente
     try {
       // L'API attend [longitude, latitude].
       const data = await getDirections([from.lon, from.lat], [to.lon, to.lat], profile)
@@ -157,6 +163,26 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
       onRouteChange(null)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Enregistre le trajet choisi et affiche son empreinte carbone.
+  async function handleStartJourney() {
+    setError('')
+    const segments = routeToSegments(result, profile)
+    if (segments.length === 0) {
+      setError("Ce trajet n'a pas de distance exploitable.")
+      return
+    }
+
+    setSaving(true)
+    try {
+      setFootprint(await saveTrajet(segments))
+    } catch (err) {
+      const message = extractError(err, "Enregistrement du trajet impossible.")
+      if (message) setError(message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -276,6 +302,35 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
 
       {/* Étapes détaillées, pour les trajets en transport en commun. */}
       {result?.journeys?.[0] && <JourneySteps journey={result.journeys[0]} />}
+
+      {/* Démarrage du trajet : enregistre son empreinte carbone. */}
+      {result && !footprint && (
+        <Button
+          onClick={handleStartJourney}
+          disabled={saving}
+          className="mt-3 h-11 w-full gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          <Leaf className="size-4" aria-hidden="true" />
+          {saving ? 'Enregistrement…' : 'Démarrer le trajet'}
+        </Button>
+      )}
+
+      {footprint && (
+        <div className="mt-3 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5">
+          <p className="flex items-center gap-2 text-xs font-semibold text-primary">
+            <Leaf className="size-4 shrink-0" aria-hidden="true" />
+            Trajet enregistré
+          </p>
+          <p className="mt-1.5 text-sm text-foreground">
+            <span className="font-semibold">{formatCo2(footprint.co2_economise_g)}</span>{' '}
+            de CO₂ économisés vs voiture
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            Émis : {formatCo2(footprint.co2_emis_g)} sur{' '}
+            {footprint.distance_km.toFixed(1).replace('.', ',')} km
+          </p>
+        </div>
+      )}
 
       {/* Disponibilité des vélos : affichée uniquement pour un trajet à vélo,
           aux deux extrémités — les segments réellement concernés. */}

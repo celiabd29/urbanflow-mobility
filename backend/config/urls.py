@@ -27,6 +27,8 @@ urlpatterns = [
     path('api/routing/', include('routing.urls')),
     # APIs de transport : vélos en libre-service et perturbations (Sprint 3).
     path('api/transport/', include('transport.urls')),
+    # Empreinte carbone des trajets (Sprint 4).
+    path('api/carbon/', include('carbon.urls')),
     # Diagnostic : quelle base tourne réellement en production.
     path('api/health/', health_view, name='health'),
 ]
