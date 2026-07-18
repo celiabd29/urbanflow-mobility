@@ -4,6 +4,7 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import Home from '@/pages/Home'
 import MapPage from '@/pages/Map'
+import MobilityProfile from '@/pages/MobilityProfile'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -30,6 +31,15 @@ function App() {
         element={
           <RequireAuth>
             <MapPage />
+          </RequireAuth>
+        }
+      />
+      {/* Configuration du profil de mobilité, juste après l'inscription. */}
+      <Route
+        path="/onboarding/mobility"
+        element={
+          <RequireAuth>
+            <MobilityProfile />
           </RequireAuth>
         }
       />
