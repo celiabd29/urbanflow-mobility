@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LogOut, Map as MapIcon } from 'lucide-react'
+import { Leaf, LogOut, Map as MapIcon } from 'lucide-react'
 import api, { tokenStore } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 
@@ -39,6 +39,13 @@ export default function Home() {
         className="mt-2 flex h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
       >
         <MapIcon className="size-4" aria-hidden="true" /> Ouvrir la carte
+      </Link>
+
+      <Link
+        to="/carbone"
+        className="flex h-11 items-center gap-2 rounded-2xl border border-border px-5 text-sm font-medium text-foreground transition hover:bg-secondary"
+      >
+        <Leaf className="size-4 text-primary" aria-hidden="true" /> Mon empreinte carbone
       </Link>
 
       {/* Action secondaire */}
