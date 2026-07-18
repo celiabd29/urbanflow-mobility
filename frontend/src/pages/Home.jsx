@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Leaf, LogOut, Map as MapIcon } from 'lucide-react'
 import api, { tokenStore } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import BottomNav from '@/components/BottomNav'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -23,7 +24,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center gap-4 px-7 text-center">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center gap-4 px-7 pb-28 text-center">
       <h1 className="text-2xl font-semibold text-foreground">Bienvenue 👋</h1>
       {error && <p className="text-sm text-destructive">{error}</p>}
       {me && (
@@ -56,6 +57,8 @@ export default function Home() {
       >
         <LogOut className="size-4" /> Se déconnecter
       </Button>
+
+      <BottomNav />
     </div>
   )
 }

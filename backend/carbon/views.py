@@ -19,6 +19,39 @@ MAX_DISTANCE_KM = 1000
 ECO_MODES = {mode for mode in EMISSION_FACTORS if mode != REFERENCE_MODE}
 
 
+# Nombre de trajets renvoyés par l'historique : suffisant pour l'écran, et
+# borné pour ne pas charger des années de données d'un coup.
+HISTORY_LIMIT = 50
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def list_trajets_view(request):
+    """
+    GET /api/carbon/historique/
+
+    Derniers trajets de l'utilisateur, du plus récent au plus ancien.
+    """
+    trajets = Trajet.objects.filter(user=request.user)[:HISTORY_LIMIT]
+
+    return Response(
+        {
+            "count": Trajet.objects.filter(user=request.user).count(),
+            "trajets": [
+                {
+                    "id": trajet.id,
+                    "date_trajet": trajet.date_trajet,
+                    "distance_km": round(trajet.distance_km, 2),
+                    "co2_emis_g": round(trajet.co2_emis, 1),
+                    "co2_economise_g": round(trajet.co2_economise, 1),
+                    "modes_utilises": trajet.modes_utilises,
+                }
+                for trajet in trajets
+            ],
+        }
+    )
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_trajet_view(request):

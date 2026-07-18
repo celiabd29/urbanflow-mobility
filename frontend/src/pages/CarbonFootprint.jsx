@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { MODE_PRESENTATION, formatCo2, getMonthlySummary } from '@/lib/carbon'
 import { extractError } from '@/lib/routing'
+import BottomNav from '@/components/BottomNav'
 
 // Ordre et icônes du graphique de comparaison (maquette écran 5).
 const COMPARISON_MODES = [
@@ -50,7 +51,7 @@ export default function CarbonFootprint() {
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10 pt-12">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-12">
         <header className="flex items-center gap-3">
           <Link
             to="/"
@@ -206,6 +207,8 @@ export default function CarbonFootprint() {
           </>
         )}
       </div>
+
+      <BottomNav />
     </div>
   )
 }
