@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, Mail, Route, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import api from '@/lib/api'
+import api, { tokenStore } from '@/lib/api'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -31,8 +31,11 @@ export default function Register() {
     }
     setLoading(true)
     try {
-      await api.post('/auth/register/', form)
-      navigate('/login') // inscription OK -> page de connexion
+      // L'inscription renvoie désormais une paire de tokens : on connecte
+      // l'utilisateur directement, sans passer par l'écran de connexion.
+      const { data } = await api.post('/auth/register/', form)
+      tokenStore.set(data)
+      navigate('/onboarding/mobility')
     } catch (err) {
       const d = err.response?.data
       // DRF renvoie { champ: ["message"] } : on affiche la 1re erreur.

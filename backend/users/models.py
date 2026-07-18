@@ -42,14 +42,39 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+# Modes de transport proposés dans le profil de mobilité.
+# Identifiants en anglais (le libellé français est géré côté frontend).
+TRANSPORT_MODES = (
+    "bike",   # vélo
+    "bus",    # bus
+    "rail",   # RER / train / métro
+    "car",    # voiture
+    "walk",   # marche
+)
+
+# Fréquence d'usage déclarée par l'utilisateur.
+USAGE_FREQUENCIES = (
+    "daily",        # tous les jours
+    "weekly",       # plusieurs fois par semaine
+    "occasional",   # de temps en temps
+    "rare",         # rarement
+)
+
+
 def default_transport_preferences():
     """
     Valeur par défaut du champ JSON des préférences de transport.
     On utilise une fonction (et non un dict littéral) pour éviter le piège
     du mutable partagé entre toutes les instances.
+
+    Note : modifier le contenu de cette fonction ne génère PAS de migration
+    (Django sérialise la référence à la fonction, pas sa valeur de retour).
+    Les utilisateurs déjà en base conservent donc leur structure existante,
+    d'où les lectures défensives ailleurs dans le code.
     """
     return {
-        "modes": [],            # ex. ["bus", "metro", "bike"]
+        "modes": [],            # sous-ensemble de TRANSPORT_MODES
+        "frequency": None,      # l'une des USAGE_FREQUENCIES
         "avoid": [],            # ex. ["highway", "stairs"]
         "max_walk_minutes": 15,
         "prefer_accessible": False,
