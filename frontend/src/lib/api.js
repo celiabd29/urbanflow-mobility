@@ -34,4 +34,75 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// --- Renouvellement automatique du token ---
+
+// Instance "nue" pour le refresh : elle ne passe pas par les intercepteurs,
+// ce qui évite toute récursion infinie.
+const refreshClient = axios.create({
+  baseURL: API_URL,
+  headers: { 'Content-Type': 'application/json' },
+})
+
+// Partagée entre les requêtes : si dix appels échouent en même temps,
+// on ne déclenche qu'UN seul refresh.
+let refreshPromise = null
+
+function redirectToLogin() {
+  tokenStore.clear()
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login')
+  }
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config
+    const isAuthError = error.response?.status === 401
+
+    // On ne tente le refresh que sur un 401, une seule fois par requête,
+    // et jamais pour l'appel de refresh lui-même.
+    if (
+      !isAuthError ||
+      !original ||
+      original._retried ||
+      original.url?.includes('/auth/token/refresh/')
+    ) {
+      return Promise.reject(error)
+    }
+
+    const refresh = tokenStore.getRefresh()
+    if (!refresh) {
+      redirectToLogin()
+      return Promise.reject(error)
+    }
+
+    original._retried = true
+
+    try {
+      refreshPromise =
+        refreshPromise ||
+        refreshClient
+          .post('/auth/token/refresh/', { refresh })
+          .then(({ data }) => {
+            // Le serveur ne renvoie que 'access' (ROTATE_REFRESH_TOKENS = False) ;
+            // tokenStore ignore les valeurs absentes.
+            tokenStore.set(data)
+            return data.access
+          })
+          .finally(() => {
+            refreshPromise = null
+          })
+
+      const newAccess = await refreshPromise
+      original.headers = { ...original.headers, Authorization: `Bearer ${newAccess}` }
+      return api(original) // on rejoue la requête initiale
+    } catch (refreshError) {
+      // Refresh expiré (> 24 h) ou invalide : retour à la connexion.
+      redirectToLogin()
+      return Promise.reject(refreshError)
+    }
+  },
+)
+
 export default api
