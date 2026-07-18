@@ -83,6 +83,57 @@ PRIM_JOURNEYS = {
     ],
 }
 
+# Cas réel observé en production : le RER A cumule 75 pannes d'ascenseur,
+# toutes étiquetées 'SIGNIFICANT_DELAYS' et 'active' par IDFM, indiscernables
+# d'une vraie perturbation par les champs structurés.
+PRIM_MOSTLY_ACCESSIBILITY = {
+    "journeys": [
+        {
+            "duration": 1155,
+            "sections": [
+                {
+                    "type": "public_transport",
+                    "duration": 840,
+                    "from": {"name": "Gare de Lyon"},
+                    "to": {"name": "La Défense"},
+                    "geojson": {"coordinates": [[2.37, 48.84], [2.23, 48.89]]},
+                    "display_informations": {
+                        "physical_mode": "RER",
+                        "label": "A",
+                        "links": [
+                            {"rel": "disruptions", "id": f"asc-{i}"} for i in range(3)
+                        ]
+                        + [
+                            {"rel": "disruptions", "id": "trafic"},
+                            {"rel": "disruptions", "id": "vide"},
+                        ],
+                    },
+                }
+            ],
+        }
+    ],
+    "disruptions": [
+        *[
+            {
+                "id": f"asc-{i}",
+                "severity": {"effect": "SIGNIFICANT_DELAYS", "priority": 30},
+                "messages": [{"text": "LA DEFENSE Panne ascenseur situé Rue Carpeaux"}],
+            }
+            for i in range(3)
+        ],
+        {
+            "id": "trafic",
+            "severity": {"effect": "SIGNIFICANT_DELAYS", "priority": 30},
+            "messages": [{"text": "Adaptation de l'offre de transport"}],
+        },
+        {
+            "id": "vide",
+            "severity": {"priority": 30},
+            "messages": [{"text": "   "}],
+        },
+    ],
+}
+
 
 class TransitRoutingTests(APITestCase):
     def setUp(self):
@@ -166,11 +217,47 @@ class TransitRoutingTests(APITestCase):
         journey = response.data["journeys"][0]
         identifiers = [item["id"] for item in journey["disruptions"]]
         self.assertIn("d-grave", identifiers)
-        self.assertIn("d-mineure", identifiers)
         # Celle-ci concerne une autre ligne : elle ne doit pas apparaître.
         self.assertNotIn("d-hors-trajet", identifiers)
         # La plus grave (priorité la plus basse) doit être en tête.
         self.assertEqual(identifiers[0], "d-grave")
+        # 'd-mineure' est une panne d'ascenseur : rattachée au trajet, mais
+        # comptée à part car elle n'affecte pas le trafic.
+        self.assertNotIn("d-mineure", identifiers)
+        self.assertEqual(journey["accessibility_total"], 1)
+
+    @patch("routing.transit.fetch_json")
+    def test_equipment_failures_counted_apart_from_traffic(self, mock_fetch):
+        """
+        Une panne d'ascenseur ne doit pas gonfler le compteur de perturbations :
+        l'utilisateur croirait son trajet dégradé alors qu'il est normal.
+        """
+        mock_fetch.return_value = PRIM_MOSTLY_ACCESSIBILITY
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            response = self.post_transit()
+
+        journey = response.data["journeys"][0]
+        # 5 signalements liés, dont 3 ascenseurs et 1 message vide.
+        self.assertEqual(journey["disruptions_total"], 1)
+        self.assertEqual(journey["accessibility_total"], 3)
+        self.assertEqual(
+            journey["disruptions"][0]["message"], "Adaptation de l'offre de transport"
+        )
+
+    @patch("routing.transit.fetch_json")
+    def test_empty_messages_are_dropped(self, mock_fetch):
+        mock_fetch.return_value = PRIM_MOSTLY_ACCESSIBILITY
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            response = self.post_transit()
+
+        messages = [
+            item["message"] for item in response.data["journeys"][0]["disruptions"]
+        ]
+        self.assertNotIn("   ", messages)
 
     @patch("routing.transit.fetch_json")
     def test_transit_flags_disruptions_as_route_specific(self, mock_fetch):

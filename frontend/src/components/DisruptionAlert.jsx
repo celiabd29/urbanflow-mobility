@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Accessibility, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   DEFAULT_SEVERITY_STYLE,
   MODE_LABELS,
@@ -24,6 +24,7 @@ const MAX_VISIBLE = 3
 export default function DisruptionAlert({
   routeDisruptions = null,
   routeTotal = 0,
+  accessibilityTotal = 0,
   modes,
 }) {
   const [data, setData] = useState(null)
@@ -47,20 +48,37 @@ export default function DisruptionAlert({
   }, [routeScope, modes])
 
   if (routeScope) {
+    // Les pannes d'équipement sont mentionnées à part : elles n'affectent pas
+    // le trafic, mais comptent pour l'accessibilité.
+    const accessibility = accessibilityTotal > 0 && (
+      <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <Accessibility className="size-3.5 shrink-0" aria-hidden="true" />
+        {accessibilityTotal} équipement{accessibilityTotal > 1 ? 's' : ''} hors
+        service (ascenseurs, escalators) sur les stations du trajet
+      </p>
+    )
+
     if (routeTotal === 0) {
       return (
-        <p className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
-          Aucune perturbation signalée sur cet itinéraire.
-        </p>
+        <div className="rounded-xl border border-border bg-secondary/40 px-3 py-2">
+          <p className="text-xs text-muted-foreground">
+            Aucune perturbation de trafic sur cet itinéraire.
+          </p>
+          {accessibility}
+        </div>
       )
     }
+
     return (
-      <Banner
-        title={`${routeTotal} perturbation${routeTotal > 1 ? 's' : ''} sur votre itinéraire`}
-        items={routeDisruptions}
-        expanded={expanded}
-        onToggle={() => setExpanded((value) => !value)}
-      />
+      <div>
+        <Banner
+          title={`${routeTotal} perturbation${routeTotal > 1 ? 's' : ''} sur votre itinéraire`}
+          items={routeDisruptions}
+          expanded={expanded}
+          onToggle={() => setExpanded((value) => !value)}
+        />
+        {accessibility}
+      </div>
     )
   }
 

@@ -7,6 +7,8 @@ et rattache les perturbations aux lignes réellement empruntées.
 Même clé que les perturbations du Sprint 3 : aucune dépendance supplémentaire.
 """
 
+import re
+
 from django.conf import settings
 
 from transport.services.base import TransportAPIError, fetch_json
@@ -21,6 +23,19 @@ PRIM_JOURNEYS_URL = (
 MAX_DISRUPTIONS_PER_SECTION = 3
 MAX_JOURNEYS = 4
 
+# Séparer les pannes d'équipement du reste est indispensable : sur un trajet
+# Gare de Lyon -> La Défense, 75 des 77 signalements du RER A sont des pannes
+# d'ascenseur. Annoncer « 77 perturbations » laisserait croire à un trafic
+# fortement dégradé alors qu'il est normal.
+#
+# Le tri repose sur le texte car les champs structurés ne discriminent rien :
+# IDFM étiquette tous ces signalements en 'SIGNIFICANT_DELAYS', tous 'active',
+# et quasiment tous à la même priorité. C'est une heuristique assumée, faute
+# de métadonnée exploitable dans le flux.
+ACCESSIBILITY_PATTERN = re.compile(
+    r"ascenseur|escalator|élévateur|elevateur|escalier m[ée]canique", re.IGNORECASE
+)
+
 
 def _to_leaflet(coordinates):
     """GeoJSON [lon, lat] -> [lat, lon] attendu par Leaflet."""
@@ -30,14 +45,20 @@ def _to_leaflet(coordinates):
 def _normalise_disruption(raw):
     severity = raw.get("severity") or {}
     messages = raw.get("messages") or []
+    text = (messages[0].get("text") if messages else "") or ""
     return {
         "id": raw.get("id"),
-        "message": (messages[0].get("text") if messages else "") or "",
+        "message": text,
         "severity": severity.get("name"),
         "effect": severity.get("effect"),
         "color": severity.get("color"),
         # Navitia trie du plus grave (petite valeur) au moins grave.
         "priority": severity.get("priority", 999),
+        # 'accessibility' : équipement en panne, sans effet sur le trafic.
+        # 'traffic' : ce qui affecte réellement la circulation.
+        "category": "accessibility"
+        if ACCESSIBILITY_PATTERN.search(text)
+        else "traffic",
     }
 
 
@@ -66,7 +87,13 @@ def _normalise_section(section, disruptions_by_id):
             for identifier in _section_disruption_ids(section)
             if identifier in disruptions_by_id
         ]
+        # Les messages vides n'apprennent rien à l'utilisateur.
+        linked = [item for item in linked if item["message"].strip()]
         linked.sort(key=lambda item: item["priority"])
+
+        traffic = [item for item in linked if item["category"] == "traffic"]
+        accessibility = [item for item in linked if item["category"] == "accessibility"]
+
         return {
             **common,
             "type": "public_transport",
@@ -75,8 +102,13 @@ def _normalise_section(section, disruptions_by_id):
             "direction": display.get("direction"),
             # Couleur officielle de la ligne, pour coller à l'identité visuelle.
             "line_color": f"#{display['color']}" if display.get("color") else None,
-            "disruptions": linked[:MAX_DISRUPTIONS_PER_SECTION],
-            "disruptions_total": len(linked),
+            # 'disruptions' ne contient que ce qui affecte le trafic : c'est ce
+            # qui doit alerter l'utilisateur.
+            "disruptions": traffic[:MAX_DISRUPTIONS_PER_SECTION],
+            "disruptions_total": len(traffic),
+            # Les pannes d'équipement comptent à part : elles importent surtout
+            # pour l'accessibilité, pas pour la durée du trajet.
+            "accessibility_total": len(accessibility),
         }
 
     if section_type in ("street_network", "crow_fly"):
@@ -121,6 +153,9 @@ def _normalise_journey(journey, disruptions_by_id):
         "disruptions": journey_disruptions,
         "disruptions_total": sum(
             section.get("disruptions_total", 0) for section in sections
+        ),
+        "accessibility_total": sum(
+            section.get("accessibility_total", 0) for section in sections
         ),
     }
 

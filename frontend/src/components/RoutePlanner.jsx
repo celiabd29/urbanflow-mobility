@@ -175,6 +175,7 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
           <DisruptionAlert
             routeDisruptions={result.journeys?.[0]?.disruptions || []}
             routeTotal={result.journeys?.[0]?.disruptions_total || 0}
+            accessibilityTotal={result.journeys?.[0]?.accessibility_total || 0}
           />
         ) : (
           <DisruptionAlert />
