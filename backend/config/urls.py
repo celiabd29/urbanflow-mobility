@@ -23,4 +23,6 @@ urlpatterns = [
     path('api/auth/', include('users.urls')),
     # Proxy itinéraires (Sprint 2).
     path('api/routing/', include('routing.urls')),
+    # APIs de transport : vélos en libre-service et perturbations (Sprint 3).
+    path('api/transport/', include('transport.urls')),
 ]

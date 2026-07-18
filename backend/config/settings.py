@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     # Local
     'users',
     'routing',
+    'transport',
 ]
 
 MIDDLEWARE = [
@@ -157,6 +158,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # OpenRouteService : clé lue depuis le .env, jamais exposée au frontend.
 ORS_API_KEY = os.environ.get('ORS_API_KEY', '')
+
+# APIs de transport (Sprint 3). Comme ORS, ces clés restent côté serveur :
+# le frontend passe toujours par nos propres endpoints.
+JCDECAUX_API_KEY = os.environ.get('JCDECAUX_API_KEY', '')
+VELIB_PRIM_API_KEY = os.environ.get('VELIB_PRIM_API_KEY', '')
+
+# Cache mémoire pour amortir les appels aux APIs externes (TTL de 60 s défini
+# dans transport/services/base.py). Local au processus : avec plusieurs
+# workers gunicorn, chacun a le sien — acceptable pour une durée aussi courte.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'urbanflow-transport',
+    }
+}
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
