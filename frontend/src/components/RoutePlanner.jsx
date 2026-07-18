@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ArrowUpDown, Crosshair, Loader2, MapPin, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import BikeAvailability from '@/components/BikeAvailability'
+import DisruptionAlert from '@/components/DisruptionAlert'
 import {
   PROFILE_LABELS,
   extractError,
@@ -164,6 +166,12 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
         Planifier un itinéraire
       </h2>
 
+      {/* Perturbations du réseau. Sans prop 'modes', le backend s'appuie sur
+          le profil de mobilité de l'utilisateur connecté. */}
+      <div className="mb-3">
+        <DisruptionAlert />
+      </div>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <AddressField
           id="from"
@@ -253,6 +261,15 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
             <p className="text-base font-semibold text-primary">{formatDuration(result.duration_s)}</p>
             <p className="text-[11px] text-muted-foreground">Durée</p>
           </div>
+        </div>
+      )}
+
+      {/* Disponibilité des vélos : affichée uniquement pour un trajet à vélo,
+          aux deux extrémités — les segments réellement concernés. */}
+      {result && profile === 'cycling-regular' && (
+        <div className="mt-3 flex flex-col gap-2">
+          <BikeAvailability point={from} label="Vélos au départ" />
+          <BikeAvailability point={to} label="Vélos à l'arrivée" />
         </div>
       )}
     </div>
