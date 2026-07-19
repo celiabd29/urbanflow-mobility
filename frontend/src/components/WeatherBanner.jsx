@@ -69,7 +69,7 @@ export default function WeatherBanner({ point, profile }) {
   // Une météo absente ne doit pas encombrer l'écran : on reste discret.
   if (error) {
     return (
-      <p className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+      <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
         {error}
       </p>
     )
@@ -77,7 +77,7 @@ export default function WeatherBanner({ point, profile }) {
 
   if (loading && !report) {
     return (
-      <p className="flex items-center gap-1.5 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+      <p className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
         <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
         Météo au départ…
       </p>
@@ -97,9 +97,9 @@ export default function WeatherBanner({ point, profile }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
-        <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-        <span className="capitalize text-foreground">{description}</span>
+      <p className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+        <Icon className="size-4 shrink-0 text-[#1D9E75]" aria-hidden="true" />
+        <span className="capitalize text-slate-900">{description}</span>
         <span>· {Math.round(current.temperature_c)} °C</span>
         {windy && (
           <span className="flex items-center gap-1">
@@ -110,7 +110,7 @@ export default function WeatherBanner({ point, profile }) {
       </p>
 
       {warn && (
-        <p className="flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-300">
+        <p className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
           <CloudRain className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>
             {upcoming && !current.is_precipitation

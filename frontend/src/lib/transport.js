@@ -40,11 +40,11 @@ export function summariseStations(stations = []) {
 // Couleurs par gravité, alignées sur les valeurs renvoyées par PRIM.
 // Teintes adaptées au panneau sombre du planificateur.
 export const SEVERITY_STYLES = {
-  BLOQUANTE: 'border-red-500/40 bg-red-500/10 text-red-300',
-  PERTURBEE: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
+  BLOQUANTE: 'border-red-300 bg-red-50 text-red-700',
+  PERTURBEE: 'border-amber-300 bg-amber-50 text-amber-700',
 }
 export const DEFAULT_SEVERITY_STYLE =
-  'border-border bg-secondary/60 text-muted-foreground'
+  'border-slate-200 bg-slate-100 text-slate-500'
 
 /** Libellés français des modes, pour l'affichage. */
 export const MODE_LABELS = {

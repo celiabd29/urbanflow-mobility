@@ -40,15 +40,15 @@ export default function BikeAvailability({ point, label }) {
   const totals = data ? summariseStations(data.stations) : null
 
   return (
-    <div className="rounded-xl border border-border bg-secondary/40 px-3 py-2.5">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <Bike className="size-3.5 text-primary" aria-hidden="true" />
+        <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+          <Bike className="size-3.5 text-[#1D9E75]" aria-hidden="true" />
           {label}
         </span>
         {loading && (
           <Loader2
-            className="size-3.5 animate-spin text-muted-foreground"
+            className="size-3.5 animate-spin text-slate-500"
             aria-hidden="true"
           />
         )}
@@ -56,22 +56,22 @@ export default function BikeAvailability({ point, label }) {
 
       {/* Une panne de l'API ne casse pas le planificateur : on le signale
           discrètement et le reste de l'écran continue de fonctionner. */}
-      {error && <p className="mt-1 text-xs text-muted-foreground">{error}</p>}
+      {error && <p className="mt-1 text-xs text-slate-500">{error}</p>}
 
       {!error && totals && (
         <>
           <p className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-lg font-semibold text-foreground">
+            <span className="text-lg font-semibold text-slate-900">
               {totals.bikes}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-slate-500">
               {totals.bikes > 1 ? 'vélos disponibles' : 'vélo disponible'}
               {data.count > 0 && ` · ${data.count} station${data.count > 1 ? 's' : ''}`}
             </span>
           </p>
 
           {totals.bikes > 0 && (
-            <p className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+            <p className="mt-0.5 flex items-center gap-3 text-[11px] text-slate-500">
               <span>{totals.mechanical} mécaniques</span>
               <span className="flex items-center gap-1">
                 <Zap className="size-3" aria-hidden="true" />
@@ -82,7 +82,7 @@ export default function BikeAvailability({ point, label }) {
           )}
 
           {data.count === 0 && (
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-slate-500">
               Aucune station dans un rayon de 500 m.
             </p>
           )}

@@ -51,7 +51,7 @@ export default function DisruptionAlert({
     // Les pannes d'équipement sont mentionnées à part : elles n'affectent pas
     // le trafic, mais comptent pour l'accessibilité.
     const accessibility = accessibilityTotal > 0 && (
-      <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+      <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500">
         <Accessibility className="size-3.5 shrink-0" aria-hidden="true" />
         {accessibilityTotal} équipement{accessibilityTotal > 1 ? 's' : ''} hors
         service (ascenseurs, escalators) sur les stations du trajet
@@ -60,8 +60,8 @@ export default function DisruptionAlert({
 
     if (routeTotal === 0) {
       return (
-        <div className="rounded-xl border border-border bg-secondary/40 px-3 py-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <p className="text-xs text-slate-500">
             Aucune perturbation de trafic sur cet itinéraire.
           </p>
           {accessibility}
@@ -84,7 +84,7 @@ export default function DisruptionAlert({
 
   if (error) {
     return (
-      <p className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+      <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
         {error}
       </p>
     )
@@ -98,7 +98,7 @@ export default function DisruptionAlert({
 
   if (data.total === 0) {
     return (
-      <p className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+      <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
         Aucune perturbation en cours{concerned && ` sur : ${concerned}`}.
       </p>
     )
@@ -120,11 +120,11 @@ function Banner({ title, subtitle, items, expanded, onToggle }) {
   const visible = expanded ? items : items.slice(0, MAX_VISIBLE)
 
   return (
-    <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
-      <p className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+    <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5">
+      <p className="flex items-center gap-2 text-xs font-semibold text-amber-700">
         <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
         {title}
-        {subtitle && <span className="font-normal text-amber-300/80">· {subtitle}</span>}
+        {subtitle && <span className="font-normal text-amber-600">· {subtitle}</span>}
       </p>
 
       <ul className="mt-2 flex flex-col gap-1.5">
@@ -157,7 +157,7 @@ function Banner({ title, subtitle, items, expanded, onToggle }) {
         <button
           type="button"
           onClick={onToggle}
-          className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-amber-300 transition hover:opacity-80"
+          className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-amber-700 transition hover:opacity-80"
         >
           {expanded ? (
             <>
