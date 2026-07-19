@@ -8,6 +8,7 @@ import MobilityProfile from '@/pages/MobilityProfile'
 import CarbonFootprint from '@/pages/CarbonFootprint'
 import Trips from '@/pages/Trips'
 import Profile from '@/pages/Profile'
+import ReportIncident from '@/pages/ReportIncident'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -34,6 +35,15 @@ function App() {
         element={
           <RequireAuth>
             <MapPage />
+          </RequireAuth>
+        }
+      />
+      {/* Signalement d'incident (FC2). */}
+      <Route
+        path="/signaler"
+        element={
+          <RequireAuth>
+            <ReportIncident />
           </RequireAuth>
         }
       />
