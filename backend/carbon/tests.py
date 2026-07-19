@@ -136,6 +136,76 @@ class TrajetEndpointTests(APITestCase):
         self.assertAlmostEqual(trajet.co2_emis, 48.0, places=1)
         self.assertEqual(len(trajet.modes_utilises), 2)
 
+    def test_addresses_are_stored_for_the_history(self):
+        """« Trajets récents » affiche les adresses : elles doivent être gardées."""
+        self.authenticate()
+        response = self.client.post(
+            self.create_url,
+            {
+                "segments": [{"mode": "bike", "distance_km": 6.2}],
+                "depart": "Domicile, Paris",
+                "arrivee": "Bureau — La Défense",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["depart"], "Domicile, Paris")
+        trajet = Trajet.objects.get(pk=response.data["id"])
+        self.assertEqual(trajet.arrivee, "Bureau — La Défense")
+
+    def test_addresses_are_optional(self):
+        """Les trajets enregistrés avant cet ajout restent valides."""
+        self.authenticate()
+        response = self.client.post(
+            self.create_url,
+            {"segments": [{"mode": "bike", "distance_km": 3}]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["depart"], "")
+
+    def test_duration_is_stored(self):
+        """La maquette affiche « Vélo · 24 min » : la durée doit être gardée."""
+        self.authenticate()
+        response = self.client.post(
+            self.create_url,
+            {"segments": [{"mode": "bike", "distance_km": 6.2}], "duree_s": 1440},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Trajet.objects.get(pk=response.data["id"]).duree_s, 1440)
+
+    def test_estimation_does_not_persist_anything(self):
+        """L'estimation éclaire le choix sans créer de trajet."""
+        self.authenticate()
+        response = self.client.post(
+            reverse("carbon:estimate"),
+            {"segments": [{"mode": "rail", "distance_km": 12}]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertAlmostEqual(response.data["co2_emis_g"], 48.0, places=1)
+        self.assertEqual(Trajet.objects.count(), 0)
+
+    def test_estimation_requires_authentication(self):
+        response = self.client.post(
+            reverse("carbon:estimate"),
+            {"segments": [{"mode": "bike", "distance_km": 3}]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_estimation_rejects_invalid_mode(self):
+        self.authenticate()
+        response = self.client.post(
+            reverse("carbon:estimate"),
+            {"segments": [{"mode": "fusee", "distance_km": 1}]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_invalid_mode_returns_400(self):
         self.authenticate()
         response = self.client.post(

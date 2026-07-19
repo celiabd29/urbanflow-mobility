@@ -41,7 +41,10 @@ def list_trajets_view(request):
                 {
                     "id": trajet.id,
                     "date_trajet": trajet.date_trajet,
+                    "depart": trajet.depart,
+                    "arrivee": trajet.arrivee,
                     "distance_km": round(trajet.distance_km, 2),
+                    "duree_s": trajet.duree_s,
                     "co2_emis_g": round(trajet.co2_emis, 1),
                     "co2_economise_g": round(trajet.co2_economise, 1),
                     "modes_utilises": trajet.modes_utilises,
@@ -50,6 +53,24 @@ def list_trajets_view(request):
             ],
         }
     )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def estimate_view(request):
+    """
+    POST /api/carbon/estimation/
+
+    Même calcul que l'enregistrement, mais sans rien persister : le
+    planificateur affiche l'économie avant que le trajet soit lancé, comme
+    aide à la décision. Les facteurs ADEME restent côté serveur.
+    """
+    try:
+        footprint = compute_footprint((request.data or {}).get("segments"))
+    except CarbonError as exc:
+        return Response({"detail": str(exc)}, status=400)
+
+    return Response(footprint)
 
 
 @api_view(["POST"])
@@ -76,14 +97,24 @@ def create_trajet_view(request):
 
     trajet = Trajet.objects.create(
         user=request.user,
+        depart=(data.get("depart") or "").strip()[:255],
+        arrivee=(data.get("arrivee") or "").strip()[:255],
         distance_km=footprint["distance_km"],
+        duree_s=max(0, int(data.get("duree_s") or 0)),
         co2_emis=footprint["co2_emis_g"],
         co2_economise=footprint["co2_economise_g"],
         modes_utilises=footprint["modes_utilises"],
     )
 
     return Response(
-        {"id": trajet.id, "date_trajet": trajet.date_trajet, **footprint}, status=201
+        {
+            "id": trajet.id,
+            "date_trajet": trajet.date_trajet,
+            "depart": trajet.depart,
+            "arrivee": trajet.arrivee,
+            **footprint,
+        },
+        status=201,
     )
 
 
