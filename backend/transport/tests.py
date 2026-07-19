@@ -71,6 +71,149 @@ def _prim_payload(active=True):
     }
 
 
+def _owm_current(code=800, description="ciel dégagé", temp=21.8):
+    """Réponse /weather réduite, calquée sur la structure réelle."""
+    return {
+        "weather": [{"id": code, "main": "Clear", "description": description, "icon": "01d"}],
+        "main": {"temp": temp, "feels_like": temp - 0.5},
+        "wind": {"speed": 2.2},
+    }
+
+
+def _owm_forecast(codes):
+    return {
+        "list": [
+            {
+                "dt_txt": f"2026-07-19 {12 + index * 3:02d}:00:00",
+                "weather": [{"id": code, "description": "pluie légère"}],
+                "main": {"temp": 18.0},
+            }
+            for index, code in enumerate(codes)
+        ]
+    }
+
+
+class WeatherTests(APITestCase):
+    """Météo au point de départ, et pluie annoncée."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(
+            email="meteo@urbanflow.app", password="Str0ng!Pass99"
+        )
+        self.url = reverse("transport:weather")
+
+    def authenticate(self):
+        response = self.client.post(
+            reverse("users:login"),
+            {"email": self.user.email, "password": "Str0ng!Pass99"},
+            format="json",
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {response.data['access']}"
+        )
+
+    def test_weather_requires_authentication(self):
+        response = self.client.get(self.url, {"lat": 48.84, "lng": 2.37})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_missing_coordinates_are_rejected(self):
+        self.authenticate()
+        self.assertEqual(
+            self.client.get(self.url).status_code, status.HTTP_400_BAD_REQUEST
+        )
+
+    @patch("transport.services.weather.fetch_json")
+    def test_clear_weather_reports_no_precipitation(self, mock_fetch):
+        mock_fetch.side_effect = [_owm_current(), _owm_forecast([800, 803])]
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        current = response.data["current"]
+        self.assertEqual(current["condition"], "clear")
+        self.assertFalse(current["is_precipitation"])
+        self.assertEqual(current["temperature_c"], 21.8)
+        self.assertIsNone(response.data["upcoming_precipitation"])
+
+    @patch("transport.services.weather.fetch_json")
+    def test_rain_code_is_recognised(self, mock_fetch):
+        """Un code 5xx doit être identifié comme de la pluie."""
+        mock_fetch.side_effect = [
+            _owm_current(code=500, description="pluie légère"),
+            _owm_forecast([500]),
+        ]
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertEqual(response.data["current"]["condition"], "rain")
+        self.assertTrue(response.data["current"]["is_precipitation"])
+
+    @patch("transport.services.weather.fetch_json")
+    def test_upcoming_rain_is_detected_while_currently_dry(self, mock_fetch):
+        """
+        Cas visé par la fonctionnalité : il fait beau maintenant, mais la
+        pluie arrive — c'est ce qui doit dissuader de prendre le vélo.
+        """
+        mock_fetch.side_effect = [_owm_current(), _owm_forecast([803, 501])]
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertFalse(response.data["current"]["is_precipitation"])
+        upcoming = response.data["upcoming_precipitation"]
+        self.assertIsNotNone(upcoming)
+        self.assertEqual(upcoming["condition"], "rain")
+
+    @patch("transport.services.weather.fetch_json")
+    def test_snow_counts_as_precipitation(self, mock_fetch):
+        mock_fetch.side_effect = [_owm_current(code=601, description="neige"), _owm_forecast([800])]
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertEqual(response.data["current"]["condition"], "snow")
+        self.assertTrue(response.data["current"]["is_precipitation"])
+
+    @patch("transport.services.weather.fetch_json")
+    def test_forecast_outage_keeps_current_conditions(self, mock_fetch):
+        """Une panne des prévisions ne doit pas masquer la météo actuelle."""
+        mock_fetch.side_effect = [
+            _owm_current(),
+            TransportAPIError("prévisions injoignables", source="OpenWeatherMap"),
+        ]
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["current"]["condition"], "clear")
+        self.assertTrue(response.data["forecast_unavailable"])
+
+    @patch("transport.services.weather.fetch_json")
+    def test_returns_503_when_service_is_down(self, mock_fetch):
+        mock_fetch.side_effect = TransportAPIError("injoignable", source="OpenWeatherMap")
+        self.authenticate()
+
+        with self.settings(OWMAP_API_KEY="cle-de-test"):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    def test_returns_503_without_api_key(self):
+        self.authenticate()
+        with self.settings(OWMAP_API_KEY=""):
+            response = self.client.get(self.url, {"lat": 48.8443, "lng": 2.3739})
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
 class TransportEndpointsTests(APITestCase):
     def setUp(self):
         cache.clear()  # le cache est partagé entre les tests

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
 import JourneySteps from '@/components/JourneySteps'
+import WeatherBanner from '@/components/WeatherBanner'
 import { formatCo2, routeToSegments, saveTrajet } from '@/lib/carbon'
 import { Leaf } from 'lucide-react'
 import {
@@ -251,6 +252,9 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
           setPoint={setTo}
           onError={setError}
         />
+
+        {/* Météo au point de départ, une fois celui-ci choisi. */}
+        {from && <WeatherBanner point={from} profile={profile} />}
 
         {/* Sélecteur de mode */}
         <div className="flex flex-wrap gap-1.5">
