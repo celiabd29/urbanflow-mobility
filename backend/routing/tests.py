@@ -1,5 +1,6 @@
 """Tests du calcul d'itinéraire. Les APIs externes sont simulées."""
 
+from copy import deepcopy
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -28,14 +29,20 @@ PRIM_JOURNEYS = {
                     "duration": 240,
                     "from": {"name": "Départ"},
                     "to": {"name": "Gare de Lyon"},
-                    "geojson": {"coordinates": [[2.3739, 48.8443], [2.3730, 48.8450]]},
+                    "geojson": {
+                        "coordinates": [[2.3739, 48.8443], [2.3730, 48.8450]],
+                        "properties": [{"length": 51}],
+                    },
                 },
                 {
                     "type": "public_transport",
                     "duration": 840,
                     "from": {"name": "Gare de Lyon (Paris)"},
                     "to": {"name": "La Défense (Puteaux)"},
-                    "geojson": {"coordinates": [[2.3730, 48.8450], [2.2377, 48.8918]]},
+                    "geojson": {
+                        "coordinates": [[2.3730, 48.8450], [2.2377, 48.8918]],
+                        "properties": [{"length": 12338}],
+                    },
                     "display_informations": {
                         "physical_mode": "RER",
                         "label": "A",
@@ -54,7 +61,10 @@ PRIM_JOURNEYS = {
                     "duration": 75,
                     "from": {"name": "La Défense"},
                     "to": {"name": "Arrivée"},
-                    "geojson": {"coordinates": [[2.2377, 48.8918], [2.2380, 48.8920]]},
+                    "geojson": {
+                        "coordinates": [[2.2377, 48.8918], [2.2380, 48.8920]],
+                        "properties": [{"length": 45}],
+                    },
                 },
             ],
         }
@@ -191,6 +201,39 @@ class TransitRoutingTests(APITestCase):
         self.assertEqual(transit_section["line"], "A")
         self.assertEqual(transit_section["line_color"], "#EB2132")
         self.assertEqual(transit_section["from"], "Gare de Lyon (Paris)")
+
+    @patch("routing.transit.fetch_json")
+    def test_transit_totals_the_section_distances(self, mock_fetch):
+        """
+        Navitia ne donne pas de distance totale. Sans somme des sections,
+        l'écran affichait « — » à côté d'une durée et d'une empreinte carbone
+        pourtant calculées sur ces mêmes distances.
+        """
+        mock_fetch.return_value = PRIM_JOURNEYS
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            response = self.post_transit()
+
+        # 51 m de marche + 12 338 m de RER + 45 m de marche
+        self.assertEqual(response.data["distance_m"], 12434)
+        self.assertEqual(response.data["journeys"][0]["distance_m"], 12434)
+
+    @patch("routing.transit.fetch_json")
+    def test_transit_distance_ignores_sections_without_length(self, mock_fetch):
+        """Les sections d'attente n'ont pas de longueur : elles valent 0."""
+        payload = deepcopy(PRIM_JOURNEYS)
+        payload["journeys"][0]["sections"].append(
+            {"type": "waiting", "duration": 120, "geojson": {}}
+        )
+        mock_fetch.return_value = payload
+        self.authenticate()
+
+        with self.settings(VELIB_PRIM_API_KEY="cle-de-test"):
+            response = self.post_transit()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["distance_m"], 12434)
 
     @patch("routing.transit.fetch_json")
     def test_transit_converts_coordinates_for_leaflet(self, mock_fetch):

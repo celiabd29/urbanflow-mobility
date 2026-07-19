@@ -113,7 +113,7 @@ def directions_view(request):
                 'provider': 'prim',
                 # Champs conservés pour rester compatible avec l'affichage
                 # existant, alimentés par la meilleure proposition.
-                'distance_m': None,
+                'distance_m': best['distance_m'],
                 'duration_s': best['duration_s'],
                 'coordinates': best['coordinates'],
                 'journeys': options,
