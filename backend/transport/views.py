@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from .services.base import TransportAPIError
 from .services.bikeshare import nearby_stations
 from .services.disruptions import current_disruptions
+from .services.weather import weather_report
 
 # Bornes de sécurité : évitent qu'un client demande un rayon absurde
 # et fasse travailler inutilement les APIs externes.
@@ -78,6 +79,31 @@ def availability_view(request):
             "stations": result["stations"],
         }
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def weather_view(request):
+    """
+    GET /api/transport/meteo/?lat=&lng=
+
+    Conditions au point demandé, et précipitations attendues dans les
+    prochaines heures le cas échéant.
+    """
+    params = request.query_params
+
+    lat, error = _parse_coordinate(params.get("lat"), "lat", -90, 90)
+    if error:
+        return Response({"detail": error}, status=400)
+
+    lng, error = _parse_coordinate(params.get("lng"), "lng", -180, 180)
+    if error:
+        return Response({"detail": error}, status=400)
+
+    try:
+        return Response(weather_report(lat, lng))
+    except TransportAPIError as exc:
+        return Response({"detail": exc.message, "source": exc.source}, status=503)
 
 
 @api_view(["GET"])
