@@ -146,8 +146,14 @@ def _normalise_journey(journey, disruptions_by_id):
             seen.setdefault(disruption["id"], disruption)
     journey_disruptions = sorted(seen.values(), key=lambda item: item["priority"])
 
+    # Navitia ne renvoie aucune distance totale : on somme celle des sections.
+    # Les sections d'attente et de correspondance n'en portent pas, d'où le
+    # repli sur 0 plutôt qu'une somme qui échouerait sur un None.
+    distance_m = sum(section["distance_m"] or 0 for section in sections)
+
     return {
         "duration_s": journey.get("duration", 0),
+        "distance_m": distance_m,
         "nb_transfers": journey.get("nb_transfers", 0),
         "departure_time": journey.get("departure_date_time"),
         "arrival_time": journey.get("arrival_date_time"),
