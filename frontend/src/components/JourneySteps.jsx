@@ -58,25 +58,25 @@ export default function JourneySteps({ journey }) {
                 }
               >
                 <Icon
-                  className={`size-4 ${section.line_color ? '' : 'text-primary'}`}
+                  className={`size-4 ${section.line_color ? '' : 'text-[#1D9E75]'}`}
                   aria-hidden="true"
                 />
               </span>
-              {!isLast && <span className="my-1 w-px flex-1 bg-border" aria-hidden="true" />}
+              {!isLast && <span className="my-1 w-px flex-1 bg-slate-200" aria-hidden="true" />}
             </div>
 
             <div className="flex flex-1 items-start justify-between gap-2 pb-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground">
+                <p className="text-xs font-semibold text-slate-900">
                   {sectionTitle(section)}
                 </p>
                 {detail && (
-                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                  <p className="mt-0.5 truncate text-[11px] text-slate-500">
                     {detail}
                   </p>
                 )}
                 {section.disruptions_total > 0 && (
-                  <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-300">
+                  <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
                     <AlertTriangle className="size-3 shrink-0" aria-hidden="true" />
                     {section.disruptions[0]?.message || 'Perturbation en cours'}
                     {section.disruptions_total > 1 &&
@@ -84,7 +84,7 @@ export default function JourneySteps({ journey }) {
                   </p>
                 )}
               </div>
-              <span className="shrink-0 text-xs font-medium text-muted-foreground">
+              <span className="shrink-0 text-xs font-medium text-slate-500">
                 {formatDuration(section.duration_s)}
               </span>
             </div>
