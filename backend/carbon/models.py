@@ -17,7 +17,14 @@ class Trajet(models.Model):
         on_delete=models.CASCADE,
         related_name="trajets",
     )
+    # Libellés d'adresse, tels que choisis dans le planificateur. Facultatifs :
+    # les trajets enregistrés avant leur ajout n'en ont pas.
+    depart = models.CharField("point de départ", max_length=255, blank=True)
+    arrivee = models.CharField("point d'arrivée", max_length=255, blank=True)
     distance_km = models.FloatField("distance parcourue (km)")
+    # Unité dans le nom, comme distance_km. 0 pour les trajets enregistrés
+    # avant l'ajout de ce champ.
+    duree_s = models.PositiveIntegerField("durée du trajet (s)", default=0)
     co2_emis = models.FloatField("CO₂ émis (g)")
     co2_economise = models.FloatField("CO₂ économisé vs voiture (g)")
     date_trajet = models.DateTimeField("date du trajet", default=timezone.now)

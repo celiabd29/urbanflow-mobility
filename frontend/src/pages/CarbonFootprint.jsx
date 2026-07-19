@@ -49,6 +49,10 @@ export default function CarbonFootprint() {
   // même si les valeurs de référence évoluent.
   const maxFactor = Math.max(1, ...Object.values(factors))
 
+  // formatCo2 renvoie « 4,09 kg » ou « 153 g » : on sépare le nombre de son
+  // unité pour les composer dans deux tailles différentes.
+  const [savedValue, savedUnit] = formatCo2(summary?.co2_economise_g).split(' ')
+
   return (
     <div className="min-h-screen w-full bg-[#f8fafc]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-12">
@@ -85,8 +89,13 @@ export default function CarbonFootprint() {
                 <TrendingDown className="size-4 text-[#1D9E75]" aria-hidden="true" />
                 CO₂ économisé ce mois
               </p>
+              {/* « 4,09 kg CO₂ » : l'unité est détachée pour être affichée en
+                  plus petit, comme sur la maquette. */}
               <p className="mt-2 text-4xl font-bold tracking-tight">
-                {formatCo2(summary.co2_economise_g)}
+                {savedValue}{' '}
+                <span className="text-2xl font-semibold text-white/70">
+                  {savedUnit} CO₂
+                </span>
               </p>
 
               {summary.evolution_pct !== null && (

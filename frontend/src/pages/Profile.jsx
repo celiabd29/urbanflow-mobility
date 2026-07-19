@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Bike, Bus, Car, Footprints, Leaf, LogOut, Route as RouteIcon, TrainFront } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  Bell,
+  Bike,
+  Bus,
+  Car,
+  ChevronRight,
+  Footprints,
+  Leaf,
+  LogOut,
+  Route as RouteIcon,
+  ShieldCheck,
+  TrainFront,
+} from 'lucide-react'
 import api, { tokenStore } from '@/lib/api'
 import { formatCo2 } from '@/lib/carbon'
 import { extractError } from '@/lib/routing'
@@ -13,6 +25,14 @@ const MODES = [
   { value: 'bus', label: 'Bus', icon: Bus },
   { value: 'car', label: 'Voiture', icon: Car },
   { value: 'walk', label: 'Marche', icon: Footprints },
+]
+
+// Réglages présents sur la maquette mais non implémentés : ils restent
+// visibles et explicitement annoncés comme à venir, plutôt que de simuler
+// des écrans qui n'existent pas.
+const SETTINGS = [
+  { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'confidentialite', label: 'Confidentialité', icon: ShieldCheck },
 ]
 
 export default function Profile() {
@@ -92,22 +112,24 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-12">
-        {/* En-tête */}
-        <header className="flex items-center gap-4">
-          <span className="flex size-14 items-center justify-center rounded-full bg-[#1D9E75] text-xl font-semibold text-white">
+      {/* En-tête vert, comme sur la maquette écran 7 */}
+      <header className="rounded-b-[2rem] bg-[#0f3d2e] px-5 pb-8 pt-14 text-white shadow-[0_20px_44px_-24px_rgba(15,61,46,0.9)]">
+        <div className="mx-auto flex w-full max-w-md items-center gap-4">
+          <span className="flex size-[68px] shrink-0 items-center justify-center rounded-full bg-[#1D9E75] text-2xl font-semibold text-white ring-4 ring-white/10">
             {initials}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-lg font-semibold text-slate-900">
+            <h1 className="truncate text-xl font-semibold tracking-tight">
               {me?.first_name || 'Mon profil'}
-            </p>
-            <p className="truncate text-sm text-slate-500">{me?.email}</p>
+            </h1>
+            <p className="truncate text-sm text-white/70">{me?.email}</p>
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-28">
         {/* Statistiques */}
-        <section className="mt-6 grid grid-cols-2 gap-3">
+        <section className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
               <RouteIcon className="size-5 text-[#1D9E75]" aria-hidden="true" />
@@ -115,15 +137,22 @@ export default function Profile() {
             <p className="mt-3 text-2xl font-bold text-slate-900">{stats.trajets}</p>
             <p className="text-xs text-slate-500">Trajets réalisés</p>
           </div>
-          <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-            <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
-              <Leaf className="size-5 text-[#1D9E75]" aria-hidden="true" />
+          {/* Le détail de ce chiffre vit sur l'écran carbone : la carte y mène. */}
+          <Link
+            to="/carbone"
+            className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-slate-200"
+          >
+            <span className="flex items-start justify-between">
+              <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
+                <Leaf className="size-5 text-[#1D9E75]" aria-hidden="true" />
+              </span>
+              <ChevronRight className="size-4 text-slate-300" aria-hidden="true" />
             </span>
-            <p className="mt-3 text-2xl font-bold text-slate-900">
+            <span className="mt-3 block text-2xl font-bold text-slate-900">
               {formatCo2(stats.co2)}
-            </p>
-            <p className="text-xs text-slate-500">CO₂ économisé ce mois</p>
-          </div>
+            </span>
+            <span className="block text-xs text-slate-500">CO₂ économisé ce mois</span>
+          </Link>
         </section>
 
         {/* Préférences de mobilité */}
@@ -166,6 +195,31 @@ export default function Profile() {
           <p className="mt-2 px-1 text-[11px] text-slate-400">
             Ces modes déterminent les perturbations qui vous sont signalées.
           </p>
+        </section>
+
+        {/* Paramètres : présents à l'écran, mais annoncés comme non actifs. */}
+        <section className="mt-6">
+          <h2 className="text-base font-semibold text-slate-900">Paramètres</h2>
+          <div className="mt-3 flex flex-col rounded-3xl border border-slate-100 bg-white shadow-sm">
+            {SETTINGS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                disabled
+                className="flex cursor-not-allowed items-center justify-between border-b border-slate-100 px-4 py-4 text-left last:border-b-0"
+              >
+                <span className="flex items-center gap-3 text-sm font-medium text-slate-500">
+                  <span className="flex size-9 items-center justify-center rounded-full bg-slate-100">
+                    <Icon className="size-4 text-slate-400" aria-hidden="true" />
+                  </span>
+                  {label}
+                </span>
+                <span className="text-[11px] font-medium text-slate-400">
+                  Bientôt disponible
+                </span>
+              </button>
+            ))}
+          </div>
         </section>
 
         {error && (

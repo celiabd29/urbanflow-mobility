@@ -1,8 +1,30 @@
 import api from '@/lib/api'
 
-/** Enregistre un trajet et renvoie son empreinte calculée par le serveur. */
-export async function saveTrajet(segments) {
-  const { data } = await api.post('/carbon/trajets/', { segments })
+/**
+ * Enregistre un trajet et renvoie son empreinte calculée par le serveur.
+ * Les adresses alimentent la liste « Trajets récents » de l'accueil.
+ */
+export async function saveTrajet(segments, { depart, arrivee, dureeS } = {}) {
+  const { data } = await api.post('/carbon/trajets/', {
+    segments,
+    depart,
+    arrivee,
+    duree_s: dureeS,
+  })
+  return data
+}
+
+/**
+ * Empreinte d'un trajet sans l'enregistrer.
+ * Sert à afficher l'économie dès le calcul de l'itinéraire, comme aide au
+ * choix du mode — les facteurs ADEME restent côté serveur.
+ */
+export async function estimateFootprint(segments, { signal } = {}) {
+  const { data } = await api.post(
+    '/carbon/estimation/',
+    { segments },
+    { signal },
+  )
   return data
 }
 
