@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ArrowUpDown, Crosshair, Loader2, MapPin, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
 import JourneySteps from '@/components/JourneySteps'
 import WeatherBanner from '@/components/WeatherBanner'
-import { formatCo2, routeToSegments, saveTrajet } from '@/lib/carbon'
+import {
+  estimateFootprint,
+  formatCo2,
+  routeToSegments,
+  saveTrajet,
+} from '@/lib/carbon'
 import { Leaf } from 'lucide-react'
 import {
   PROFILE_LABELS,
@@ -109,13 +115,21 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
   const [from, setFrom] = useState(null)
   const [to, setTo] = useState(null)
   const [profiles, setProfiles] = useState([])
-  const [profile, setProfile] = useState('foot-walking')
+  // Les chips de l'accueil ouvrent la carte avec un mode déjà choisi
+  // (/map?mode=cycling-regular).
+  const [searchParams] = useSearchParams()
+  const [profile, setProfile] = useState(
+    () => searchParams.get('mode') || 'foot-walking',
+  )
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   // Empreinte du trajet une fois démarré (Sprint 4).
   const [footprint, setFootprint] = useState(null)
   const [saving, setSaving] = useState(false)
+  // Économie estimée, affichée dès le calcul : elle aide à choisir le mode,
+  // ce qu'un chiffre visible seulement après « Démarrer » ne permet pas.
+  const [estimate, setEstimate] = useState(null)
 
   // Les modes viennent du serveur ; repli sur la liste locale si l'appel échoue.
   useEffect(() => {
@@ -123,6 +137,24 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
       .then(setProfiles)
       .catch(() => setProfiles(Object.keys(PROFILE_LABELS)))
   }, [])
+
+  // Estime l'empreinte du trajet calculé, sans rien enregistrer.
+  useEffect(() => {
+    const segments = routeToSegments(result, profile)
+    if (segments.length === 0) {
+      setEstimate(null)
+      return
+    }
+
+    const controller = new AbortController()
+    estimateFootprint(segments, { signal: controller.signal })
+      // L'estimation est un complément : si elle échoue, l'itinéraire reste
+      // utilisable et aucune erreur n'est affichée.
+      .then(setEstimate)
+      .catch(() => setEstimate(null))
+
+    return () => controller.abort()
+  }, [result, profile])
 
   // Utilise la géolocalisation de la carte comme point de départ.
   function useMyPosition() {
@@ -178,7 +210,13 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
 
     setSaving(true)
     try {
-      setFootprint(await saveTrajet(segments))
+      setFootprint(
+        await saveTrajet(segments, {
+          depart: from?.label,
+          arrivee: to?.label,
+          dureeS: Math.round(result.duration_s || 0),
+        }),
+      )
     } catch (err) {
       const message = extractError(err, "Enregistrement du trajet impossible.")
       if (message) setError(message)
@@ -301,6 +339,20 @@ export default function RoutePlanner({ userPosition, onRouteChange }) {
             <p className="text-base font-semibold text-primary">{formatDuration(result.duration_s)}</p>
             <p className="text-[11px] text-muted-foreground">Durée</p>
           </div>
+          {/* Économie affichée d'emblée : c'est ce qui permet d'arbitrer entre
+              deux modes avant de partir. */}
+          {estimate && (
+            <>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="flex items-center justify-center gap-1 text-base font-semibold text-primary">
+                  <Leaf className="size-3.5 shrink-0" aria-hidden="true" />
+                  {formatCo2(estimate.co2_economise_g)}
+                </p>
+                <p className="text-[11px] text-muted-foreground">CO₂ économisé</p>
+              </div>
+            </>
+          )}
         </div>
       )}
 
