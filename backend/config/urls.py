@@ -29,6 +29,8 @@ urlpatterns = [
     path('api/transport/', include('transport.urls')),
     # Empreinte carbone des trajets (Sprint 4).
     path('api/carbon/', include('carbon.urls')),
+    # Signalement d'incidents (FC2).
+    path('api/incidents/', include('incidents.urls')),
     # Diagnostic : quelle base tourne réellement en production.
     path('api/health/', health_view, name='health'),
 ]

@@ -6,13 +6,32 @@ from rest_framework.response import Response
 
 from transport.services.base import TransportAPIError
 
-from .services import ALLOWED_PROFILES, RoutingError, directions, geocode
+from .services import (
+    ALLOWED_PROFILES,
+    RoutingError,
+    directions,
+    geocode,
+    reverse_geocode,
+)
 from .transit import journeys as transit_journeys
 
 # Profil supplémentaire, servi par PRIM et non par ORS : marche + transport
 # en commun. Seul ce mode permet de rattacher les perturbations à l'itinéraire
 # réellement emprunté, puisqu'il contient des lignes.
 TRANSIT_PROFILE = 'transit'
+
+
+def _parse_coordinate(raw, name, minimum, maximum):
+    """Valide un paramètre de coordonnée et renvoie (valeur, erreur)."""
+    if raw is None:
+        return None, f"Le paramètre '{name}' est obligatoire."
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None, f"Le paramètre '{name}' doit être un nombre."
+    if not minimum <= value <= maximum:
+        return None, f"Le paramètre '{name}' doit être compris entre {minimum} et {maximum}."
+    return value, None
 
 
 @api_view(['GET'])
@@ -32,6 +51,26 @@ def geocode_view(request):
         return Response({'detail': exc.message}, status=exc.status)
 
     return Response({'results': results})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def reverse_geocode_view(request):
+    """GET /api/routing/geocode/inverse/?lat=&lng= -> adresse la plus proche."""
+    lat, error = _parse_coordinate(request.query_params.get('lat'), 'lat', -90, 90)
+    if error:
+        return Response({'detail': error}, status=400)
+
+    lng, error = _parse_coordinate(request.query_params.get('lng'), 'lng', -180, 180)
+    if error:
+        return Response({'detail': error}, status=400)
+
+    try:
+        label = reverse_geocode(lat, lng)
+    except RoutingError as exc:
+        return Response({'detail': exc.message}, status=exc.status)
+
+    return Response({'adresse': label})
 
 
 @api_view(['POST'])
