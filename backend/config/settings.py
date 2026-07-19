@@ -202,6 +202,7 @@ ORS_API_KEY = os.environ.get('ORS_API_KEY', '')
 # le frontend passe toujours par nos propres endpoints.
 JCDECAUX_API_KEY = os.environ.get('JCDECAUX_API_KEY', '')
 VELIB_PRIM_API_KEY = os.environ.get('VELIB_PRIM_API_KEY', '')
+OWMAP_API_KEY = os.environ.get('OWMAP_API_KEY', '')
 
 # Cache mémoire pour amortir les appels aux APIs externes (TTL de 60 s défini
 # dans transport/services/base.py). Local au processus : avec plusieurs
