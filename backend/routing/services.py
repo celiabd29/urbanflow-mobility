@@ -60,6 +60,32 @@ def geocode(query, limit=5):
     ]
 
 
+def reverse_geocode(lat, lon):
+    """
+    Adresse la plus proche d'un point.
+
+    Sert à l'écran de signalement : l'utilisateur place une épingle sur la
+    carte, on lui montre une adresse lisible plutôt que des coordonnées.
+    """
+    try:
+        response = requests.get(
+            f'{ORS_BASE}/geocode/reverse',
+            params={'point.lat': lat, 'point.lon': lon, 'size': 1},
+            headers=_headers(),
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        raise RoutingError(f"Service de géocodage injoignable : {exc}")
+
+    if response.status_code != 200:
+        raise RoutingError("Le géocodage inverse a échoué.")
+
+    features = response.json().get('features') or []
+    if not features:
+        return None
+    return features[0]['properties'].get('label')
+
+
 def directions(start, end, profile):
     """
     Calcule un itinéraire entre deux points.

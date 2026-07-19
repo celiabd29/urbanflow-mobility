@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { TriangleAlert } from 'lucide-react'
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -141,6 +143,15 @@ export default function MapPage() {
           </p>
         </div>
       )}
+
+      {/* Accès au signalement d'incident (FC2), au-dessus de la barre de nav. */}
+      <Link
+        to="/signaler"
+        className="absolute bottom-24 right-4 z-[1000] flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50"
+      >
+        <TriangleAlert className="size-4 text-[#1D9E75]" aria-hidden="true" />
+        Signaler
+      </Link>
 
       <BottomNav />
     </div>
