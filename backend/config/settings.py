@@ -221,6 +221,15 @@ CORS_ALLOWED_ORIGINS = [
     "https://urbanflow-mobility.up.railway.app",
 ]
 
+# CSRF derrière le proxy Railway.
+# Le domaine du backend doit être déclaré comme origine de confiance, sinon
+# le POST de connexion à l'admin échoue en « CSRF verification failed ».
+CSRF_TRUSTED_ORIGINS = ["https://urbanflow-mobility-production.up.railway.app"]
+
+# Railway termine le TLS en amont et transmet la requête en HTTP interne :
+# sans cet en-tête, Django la croit non sécurisée et rejette le cookie CSRF.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
