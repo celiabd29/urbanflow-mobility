@@ -18,6 +18,11 @@ class Incident(models.Model):
         PANNE = "panne", "Panne"
         AUTRE = "autre", "Autre"
 
+    class Statut(models.TextChoices):
+        ACTIF = "actif", "Actif"
+        RESOLU = "resolu", "Résolu"
+        EXPIRE = "expire", "Expiré"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -26,6 +31,9 @@ class Incident(models.Model):
         related_name="incidents",
     )
     type = models.CharField("type d'incident", max_length=20, choices=Type.choices)
+    statut = models.CharField(
+        "statut", max_length=20, choices=Statut.choices, default=Statut.ACTIF
+    )
     commentaire = models.TextField("commentaire", blank=True, max_length=500)
     latitude = models.FloatField("latitude")
     longitude = models.FloatField("longitude")
