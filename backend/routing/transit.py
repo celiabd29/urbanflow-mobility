@@ -1,0 +1,214 @@
+"""Itinéraires en transport en commun via PRIM (moteur Navitia d'IDFM).
+
+ORS ne calcule que marche, vélo, voiture et fauteuil. PRIM expose le moteur
+Navitia d'Île-de-France Mobilités, qui combine marche et transport en commun,
+et rattache les perturbations aux lignes réellement empruntées.
+
+Même clé que les perturbations du Sprint 3 : aucune dépendance supplémentaire.
+"""
+
+import re
+
+from django.conf import settings
+
+from transport.services.base import TransportAPIError, fetch_json
+
+PRIM_JOURNEYS_URL = (
+    "https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia/journeys"
+)
+
+# Nombre de perturbations détaillées renvoyées par section. Une ligne comme le
+# RER A en cumule des dizaines (pannes d'ascenseur pour l'essentiel) : on
+# expose les plus graves et on donne le total.
+MAX_DISRUPTIONS_PER_SECTION = 3
+MAX_JOURNEYS = 4
+
+# Séparer les pannes d'équipement du reste est indispensable : sur un trajet
+# Gare de Lyon -> La Défense, 75 des 77 signalements du RER A sont des pannes
+# d'ascenseur. Annoncer « 77 perturbations » laisserait croire à un trafic
+# fortement dégradé alors qu'il est normal.
+#
+# Le tri repose sur le texte car les champs structurés ne discriminent rien :
+# IDFM étiquette tous ces signalements en 'SIGNIFICANT_DELAYS', tous 'active',
+# et quasiment tous à la même priorité. C'est une heuristique assumée, faute
+# de métadonnée exploitable dans le flux.
+ACCESSIBILITY_PATTERN = re.compile(
+    r"ascenseur|escalator|élévateur|elevateur|escalier m[ée]canique", re.IGNORECASE
+)
+
+
+def _to_leaflet(coordinates):
+    """GeoJSON [lon, lat] -> [lat, lon] attendu par Leaflet."""
+    return [[lat, lon] for lon, lat in coordinates or []]
+
+
+def _normalise_disruption(raw):
+    severity = raw.get("severity") or {}
+    messages = raw.get("messages") or []
+    text = (messages[0].get("text") if messages else "") or ""
+    return {
+        "id": raw.get("id"),
+        "message": text,
+        "severity": severity.get("name"),
+        "effect": severity.get("effect"),
+        "color": severity.get("color"),
+        # Navitia trie du plus grave (petite valeur) au moins grave.
+        "priority": severity.get("priority", 999),
+        # 'accessibility' : équipement en panne, sans effet sur le trafic.
+        # 'traffic' : ce qui affecte réellement la circulation.
+        "category": "accessibility"
+        if ACCESSIBILITY_PATTERN.search(text)
+        else "traffic",
+    }
+
+
+def _section_disruption_ids(section):
+    """Identifiants des perturbations rattachées à une section."""
+    links = (section.get("display_informations") or {}).get("links") or []
+    return [link["id"] for link in links if link.get("rel") == "disruptions"]
+
+
+def _normalise_section(section, disruptions_by_id):
+    """Convertit une section Navitia en structure exploitable par le front."""
+    section_type = section.get("type")
+    display = section.get("display_informations") or {}
+    coordinates = _to_leaflet((section.get("geojson") or {}).get("coordinates"))
+
+    # La longueur vit dans les propriétés du GeoJSON, pour toutes les sections
+    # y compris le transport en commun. Indispensable au calcul d'empreinte
+    # carbone, qui raisonne en distance et non en durée.
+    properties = ((section.get("geojson") or {}).get("properties") or [{}])[0]
+
+    common = {
+        "duration_s": section.get("duration", 0),
+        "distance_m": properties.get("length"),
+        "from": (section.get("from") or {}).get("name"),
+        "to": (section.get("to") or {}).get("name"),
+        "coordinates": coordinates,
+    }
+
+    if section_type == "public_transport":
+        linked = [
+            disruptions_by_id[identifier]
+            for identifier in _section_disruption_ids(section)
+            if identifier in disruptions_by_id
+        ]
+        # Les messages vides n'apprennent rien à l'utilisateur.
+        linked = [item for item in linked if item["message"].strip()]
+        linked.sort(key=lambda item: item["priority"])
+
+        traffic = [item for item in linked if item["category"] == "traffic"]
+        accessibility = [item for item in linked if item["category"] == "accessibility"]
+
+        return {
+            **common,
+            "type": "public_transport",
+            "mode": display.get("physical_mode"),
+            "line": display.get("label") or display.get("code"),
+            "direction": display.get("direction"),
+            # Couleur officielle de la ligne, pour coller à l'identité visuelle.
+            "line_color": f"#{display['color']}" if display.get("color") else None,
+            # 'disruptions' ne contient que ce qui affecte le trafic : c'est ce
+            # qui doit alerter l'utilisateur.
+            "disruptions": traffic[:MAX_DISRUPTIONS_PER_SECTION],
+            "disruptions_total": len(traffic),
+            # Les pannes d'équipement comptent à part : elles importent surtout
+            # pour l'accessibilité, pas pour la durée du trajet.
+            "accessibility_total": len(accessibility),
+        }
+
+    if section_type in ("street_network", "crow_fly"):
+        return {
+            **common,
+            "type": "walking",
+            "mode": section.get("mode", "walking"),
+        }
+
+    # transfer, waiting, etc. : on les garde pour afficher les étapes fidèlement.
+    return {**common, "type": section_type}
+
+
+def _normalise_journey(journey, disruptions_by_id):
+    sections = [
+        _normalise_section(section, disruptions_by_id)
+        for section in journey.get("sections") or []
+    ]
+
+    # Tracé complet du trajet, toutes sections confondues.
+    coordinates = []
+    for section in sections:
+        coordinates.extend(section["coordinates"])
+
+    # Perturbations du trajet = union de celles de ses sections, dédoublonnées.
+    seen = {}
+    for section in sections:
+        for disruption in section.get("disruptions") or []:
+            seen.setdefault(disruption["id"], disruption)
+    journey_disruptions = sorted(seen.values(), key=lambda item: item["priority"])
+
+    # Navitia ne renvoie aucune distance totale : on somme celle des sections.
+    # Les sections d'attente et de correspondance n'en portent pas, d'où le
+    # repli sur 0 plutôt qu'une somme qui échouerait sur un None.
+    distance_m = sum(section["distance_m"] or 0 for section in sections)
+
+    return {
+        "duration_s": journey.get("duration", 0),
+        "distance_m": distance_m,
+        "nb_transfers": journey.get("nb_transfers", 0),
+        "departure_time": journey.get("departure_date_time"),
+        "arrival_time": journey.get("arrival_date_time"),
+        "coordinates": coordinates,
+        "sections": sections,
+        "disruptions": journey_disruptions,
+        "disruptions_total": sum(
+            section.get("disruptions_total", 0) for section in sections
+        ),
+        "accessibility_total": sum(
+            section.get("accessibility_total", 0) for section in sections
+        ),
+    }
+
+
+def journeys(start, end):
+    """
+    Itinéraires marche + transport en commun entre deux points [lon, lat].
+
+    Renvoie plusieurs propositions, chacune détaillée en sections, avec les
+    perturbations rattachées aux lignes réellement empruntées.
+    """
+    api_key = getattr(settings, "VELIB_PRIM_API_KEY", "")
+    if not api_key:
+        raise TransportAPIError(
+            "Clé PRIM absente côté serveur.", source="Île-de-France Mobilités"
+        )
+
+    start_param = f"{start[0]};{start[1]}"
+    end_param = f"{end[0]};{end[1]}"
+
+    payload = fetch_json(
+        PRIM_JOURNEYS_URL,
+        params={"from": start_param, "to": end_param},
+        headers={"apikey": api_key},
+        cache_key=f"prim:journeys:{start_param}:{end_param}",
+        source="Île-de-France Mobilités",
+    )
+
+    raw_journeys = payload.get("journeys") or []
+    if not raw_journeys:
+        raise TransportAPIError(
+            "Aucun itinéraire en transport en commun trouvé. "
+            "Ce service ne couvre que l'Île-de-France.",
+            status=404,
+            source="Île-de-France Mobilités",
+        )
+
+    disruptions_by_id = {
+        item["id"]: _normalise_disruption(item)
+        for item in payload.get("disruptions") or []
+        if item.get("id")
+    }
+
+    return [
+        _normalise_journey(journey, disruptions_by_id)
+        for journey in raw_journeys[:MAX_JOURNEYS]
+    ]

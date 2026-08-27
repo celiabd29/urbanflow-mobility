@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo UrbanFlow : icône « Route » blanche sur carré vert #1D9E75,
+       identique au logo affiché dans l'app (login, en-têtes). Source unique
+       des icônes PWA + favicon (voir pwa-assets.config.js). -->
+  <rect width="512" height="512" rx="120" fill="#1D9E75"/>
+  <svg x="126" y="126" width="260" height="260" viewBox="0 0 24 24" fill="none"
+       stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="6" cy="19" r="3"/>
+    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+    <circle cx="18" cy="5" r="3"/>
+  </svg>
+</svg>

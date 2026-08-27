@@ -1,0 +1,41 @@
+"""
+URL configuration for config project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import include, path
+
+from users.views import password_reset_confirm_view, password_reset_request_view
+
+from .health import health_view
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # Routes d'authentification de l'app users, préfixées par /api/auth/.
+    path('api/auth/', include('users.urls')),
+    # Réinitialisation de mot de passe (sans email : le token est renvoyé).
+    path('api/users/password-reset/request/', password_reset_request_view),
+    path('api/users/password-reset/confirm/', password_reset_confirm_view),
+    # Proxy itinéraires (Sprint 2).
+    path('api/routing/', include('routing.urls')),
+    # APIs de transport : vélos en libre-service et perturbations (Sprint 3).
+    path('api/transport/', include('transport.urls')),
+    # Empreinte carbone des trajets (Sprint 4).
+    path('api/carbon/', include('carbon.urls')),
+    # Signalement d'incidents (FC2).
+    path('api/signalements/', include('incidents.urls')),
+    # Diagnostic : quelle base tourne réellement en production.
+    path('api/health/', health_view, name='health'),
+]
