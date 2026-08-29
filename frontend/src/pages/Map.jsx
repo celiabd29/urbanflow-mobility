@@ -468,7 +468,7 @@ export default function MapPage() {
 
   // Une fois les adresses du trajet rejoué géocodées, on lance le recalcul,
   // exactement comme un nouveau calcul manuel (l'utilisateur peut ensuite le
-  // suivre, navigation turn-by-turn comprise).
+  // suivre, navigation pas à pas comprise).
   useEffect(() => {
     if (pendingReplayCalc && from && to && phase === 'search') {
       setPendingReplayCalc(false)

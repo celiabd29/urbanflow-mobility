@@ -67,7 +67,7 @@ L'application réelle ajoute plusieurs fonctionnalités absentes des maquettes v
 - **Transport en commun** : itinéraires multimodaux via l'API **PRIM** (moteur
   Navitia d'Île-de-France Mobilités) : l'écart technique « ORS ne fait pas de
   transport public » est **résolu** (ORS reste utilisé pour vélo/marche/voiture).
-- **Navigation pas-à-pas** (turn-by-turn) : `components/NavigationBanner.jsx`,
+- **Navigation pas-à-pas** : `components/NavigationBanner.jsx`,
   `components/NavigationSheet.jsx`.
 - **Mode hors ligne (PWA)** : service worker, cache des tuiles et des données,
   file de rejeu des signalements : `components/OfflineBadge.jsx`,
