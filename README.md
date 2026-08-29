@@ -27,7 +27,7 @@ Fonctionnalités transverses :
 
 - **PWA hors ligne** : installation, cache des tuiles et des données, file de rejeu des
   signalements créés sans connexion.
-- **Navigation pas à pas** (turn by turn) à partir des instructions des APIs.
+- **Navigation pas à pas** à partir des instructions des APIs.
 - **Resélection d'un trajet passé** depuis l'historique, avec recalcul.
 - **Django Admin** pour la gestion des comptes, trajets et signalements.
 
