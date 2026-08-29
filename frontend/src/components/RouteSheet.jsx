@@ -98,12 +98,12 @@ export default function RouteSheet({
               <p className="text-3xl font-bold tracking-tight text-slate-900">
                 {formatDuration(result?.duration_s)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-500">
                 {formatDistance(result?.distance_m)}
               </p>
             </div>
             {estimate && (
-              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#1D9E75]/10 px-3 py-1.5 text-sm font-semibold text-[#1D9E75]">
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#1D9E75]/10 px-3 py-1.5 text-sm font-semibold text-[#0F7B58]">
                 <Leaf className="size-4" aria-hidden="true" />
                 {formatCo2(estimate.co2_economise_g)} CO₂
               </span>
@@ -119,7 +119,7 @@ export default function RouteSheet({
         )}
 
         {error && (
-          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </p>
         )}
@@ -169,7 +169,7 @@ export default function RouteSheet({
 
             {footprint && (
               <div className="rounded-2xl border border-[#1D9E75]/30 bg-[#1D9E75]/10 px-4 py-3">
-                <p className="flex items-center gap-2 text-xs font-semibold text-[#1D9E75]">
+                <p className="flex items-center gap-2 text-xs font-semibold text-[#0F7B58]">
                   <Leaf className="size-4 shrink-0" aria-hidden="true" />
                   Trajet enregistré
                 </p>

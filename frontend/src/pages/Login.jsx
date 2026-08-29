@@ -118,7 +118,7 @@ export default function Login() {
 
         <Link
           to="/mot-de-passe-oublie"
-          className="-mt-1 self-end text-xs font-medium text-primary transition hover:opacity-80"
+          className="-mt-1 self-end text-xs font-medium text-[#0F7B58] transition hover:opacity-80"
         >
           Mot de passe oublié ?
         </Link>
@@ -135,7 +135,7 @@ export default function Login() {
       {/* Lien vers l'inscription (React Router) */}
       <p className="mt-auto pt-8 text-center text-sm text-muted-foreground">
         {'Pas encore de compte ? '}
-        <Link to="/register" className="font-semibold text-primary transition hover:opacity-80">
+        <Link to="/register" className="font-semibold text-[#0F7B58] transition hover:opacity-80">
           S&apos;inscrire
         </Link>
       </p>

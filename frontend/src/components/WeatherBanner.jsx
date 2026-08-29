@@ -98,7 +98,7 @@ export default function WeatherBanner({ point, profile }) {
   return (
     <div className="flex flex-col gap-1.5">
       <p className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-        <Icon className="size-4 shrink-0 text-[#1D9E75]" aria-hidden="true" />
+        <Icon className="size-4 shrink-0 text-[#0F7B58]" aria-hidden="true" />
         <span className="capitalize text-slate-900">{description}</span>
         <span>· {Math.round(current.temperature_c)} °C</span>
         {windy && (

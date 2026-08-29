@@ -71,12 +71,12 @@ export default function CarbonFootprint() {
 
         {loading && (
           <div className="mt-10 flex justify-center">
-            <Loader2 className="size-6 animate-spin text-slate-400" aria-hidden="true" />
+            <Loader2 className="size-6 animate-spin text-slate-500" aria-hidden="true" />
           </div>
         )}
 
         {error && (
-          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -86,7 +86,7 @@ export default function CarbonFootprint() {
             {/* Carte principale : CO₂ économisé ce mois */}
             <section className="mt-4 rounded-3xl bg-[#0f3d2e] p-6 text-white shadow-[0_20px_44px_-20px_rgba(15,61,46,0.9)]">
               <p className="flex items-center gap-2 text-sm text-white/70">
-                <TrendingDown className="size-4 text-[#1D9E75]" aria-hidden="true" />
+                <TrendingDown className="size-4 text-[#0F7B58]" aria-hidden="true" />
                 CO₂ économisé ce mois
               </p>
               {/* « 4,09 kg CO₂ » : l'unité est détachée pour être affichée en
@@ -152,7 +152,7 @@ export default function CarbonFootprint() {
                   )
                 })}
               </div>
-              <p className="mt-2 px-1 text-[11px] text-slate-400">
+              <p className="mt-2 px-1 text-[11px] text-slate-500">
                 Facteurs d&apos;émission ADEME, par personne et par kilomètre.
               </p>
             </section>
@@ -226,7 +226,7 @@ function StatCard({ icon: Icon, value, label }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
-        <Icon className="size-5 text-[#1D9E75]" aria-hidden="true" />
+        <Icon className="size-5 text-[#0F7B58]" aria-hidden="true" />
       </span>
       <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
       <p className="text-xs text-slate-500">{label}</p>

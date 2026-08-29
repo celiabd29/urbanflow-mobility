@@ -108,7 +108,7 @@ export default function MobilityProfile() {
                     className={[
                       'flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition',
                       selected
-                        ? 'border-[#1D9E75] bg-[#1D9E75]/10 text-[#1D9E75]'
+                        ? 'border-[#1D9E75] bg-[#1D9E75]/10 text-[#0F7B58]'
                         : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300',
                     ].join(' ')}
                   >
@@ -146,7 +146,7 @@ export default function MobilityProfile() {
           </div>
 
           {error && (
-            <p className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+            <p className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
               {error}
             </p>
           )}

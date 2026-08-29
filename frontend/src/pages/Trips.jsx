@@ -112,12 +112,12 @@ export default function Trips() {
 
         {loading && (
           <div className="mt-10 flex justify-center">
-            <Loader2 className="size-6 animate-spin text-slate-400" aria-hidden="true" />
+            <Loader2 className="size-6 animate-spin text-slate-500" aria-hidden="true" />
           </div>
         )}
 
         {error && (
-          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -190,7 +190,7 @@ export default function Trips() {
                   </div>
 
                   <div className="flex shrink-0 flex-col items-end gap-2">
-                    <span className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#1D9E75]">
+                    <span className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#0F7B58]">
                       <Leaf className="size-3.5" aria-hidden="true" />
                       {formatCo2(trajet.co2_economise_g)}
                     </span>

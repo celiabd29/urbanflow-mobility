@@ -33,7 +33,7 @@ export default function NavigationSheet({
     >
       <div className="shrink-0 px-6 pb-1 pt-4">
         <p className="text-sm font-semibold text-slate-900">Navigation</p>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-500">
           Étape {index + 1} sur {steps.length}
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function NavigationSheet({
                     {step.title}
                   </span>
                   {meta && (
-                    <span className="mt-0.5 block truncate text-xs text-slate-400">
+                    <span className="mt-0.5 block truncate text-xs text-slate-500">
                       {meta}
                     </span>
                   )}

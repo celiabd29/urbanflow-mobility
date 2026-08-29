@@ -132,7 +132,7 @@ export default function Profile() {
         <section className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
-              <RouteIcon className="size-5 text-[#1D9E75]" aria-hidden="true" />
+              <RouteIcon className="size-5 text-[#0F7B58]" aria-hidden="true" />
             </span>
             <p className="mt-3 text-2xl font-bold text-slate-900">{stats.trajets}</p>
             <p className="text-xs text-slate-500">Trajets réalisés</p>
@@ -144,7 +144,7 @@ export default function Profile() {
           >
             <span className="flex items-start justify-between">
               <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
-                <Leaf className="size-5 text-[#1D9E75]" aria-hidden="true" />
+                <Leaf className="size-5 text-[#0F7B58]" aria-hidden="true" />
               </span>
               <ChevronRight className="size-4 text-slate-300" aria-hidden="true" />
             </span>
@@ -167,7 +167,7 @@ export default function Profile() {
                 <div key={value} className="flex items-center justify-between px-5 py-4">
                   <span className="flex items-center gap-3">
                     <span className="flex size-10 items-center justify-center rounded-full bg-[#1D9E75]/10">
-                      <Icon className="size-5 text-[#1D9E75]" aria-hidden="true" />
+                      <Icon className="size-5 text-[#0F7B58]" aria-hidden="true" />
                     </span>
                     <span className="text-sm font-medium text-slate-800">{label}</span>
                   </span>
@@ -192,7 +192,7 @@ export default function Profile() {
               )
             })}
           </div>
-          <p className="mt-2 px-1 text-[11px] text-slate-400">
+          <p className="mt-2 px-1 text-[11px] text-slate-500">
             Ces modes déterminent les perturbations qui vous sont signalées.
           </p>
         </section>
@@ -210,11 +210,11 @@ export default function Profile() {
               >
                 <span className="flex items-center gap-3 text-sm font-medium text-slate-500">
                   <span className="flex size-9 items-center justify-center rounded-full bg-slate-100">
-                    <Icon className="size-4 text-slate-400" aria-hidden="true" />
+                    <Icon className="size-4 text-slate-500" aria-hidden="true" />
                   </span>
                   {label}
                 </span>
-                <span className="text-[11px] font-medium text-slate-400">
+                <span className="text-[11px] font-medium text-slate-500">
                   Bientôt disponible
                 </span>
               </button>
@@ -223,7 +223,7 @@ export default function Profile() {
         </section>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -231,7 +231,7 @@ export default function Profile() {
         <button
           type="button"
           onClick={logout}
-          className="mt-7 flex h-12 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+          className="mt-7 flex h-12 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 text-sm font-semibold text-red-700 transition hover:bg-red-100"
         >
           <LogOut className="size-4" aria-hidden="true" />
           Déconnexion

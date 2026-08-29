@@ -193,7 +193,7 @@ export default function Register() {
       {/* Lien vers la connexion (React Router) */}
       <p className="mt-auto pt-8 text-center text-sm text-muted-foreground">
         {'Déjà un compte ? '}
-        <Link to="/login" className="font-semibold text-primary transition hover:opacity-80">
+        <Link to="/login" className="font-semibold text-[#0F7B58] transition hover:opacity-80">
           Se connecter
         </Link>
       </p>

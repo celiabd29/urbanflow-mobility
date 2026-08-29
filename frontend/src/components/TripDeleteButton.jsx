@@ -65,7 +65,7 @@ export default function TripDeleteButton({ onConfirm, className = '' }) {
         stop(e)
         setConfirming(true)
       }}
-      className={`flex size-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-red-50 hover:text-red-500 ${className}`}
+      className={`flex size-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-500 ${className}`}
     >
       <Trash2 className="size-4" aria-hidden="true" />
     </button>

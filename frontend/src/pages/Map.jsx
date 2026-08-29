@@ -579,7 +579,7 @@ export default function MapPage() {
         {/* Position de l'utilisateur (masquée quand un itinéraire est affiché,
             pour ne pas confondre avec le point A). */}
         {position && !route && (
-          <Marker position={position}>
+          <Marker position={position} title="Votre position">
             <Popup>Vous êtes ici</Popup>
           </Marker>
         )}
@@ -590,16 +590,32 @@ export default function MapPage() {
               positions={route.coordinates}
               pathOptions={{ color: ROUTE_COLOR, weight: 5, opacity: 0.85 }}
             />
-            <Marker position={[route.from.lat, route.from.lon]} icon={START_ICON}>
+            <Marker
+              position={[route.from.lat, route.from.lon]}
+              icon={START_ICON}
+              title="Point de départ"
+            >
               <Popup>Départ : {route.from.label}</Popup>
             </Marker>
-            <Marker position={[route.to.lat, route.to.lon]} icon={END_ICON}>
+            <Marker
+              position={[route.to.lat, route.to.lon]}
+              icon={END_ICON}
+              title="Point d'arrivée"
+            >
               <Popup>Arrivée : {route.to.label}</Popup>
             </Marker>
             {navigating && currentStep?.point ? (
               // En navigation : pastille sur l'étape en cours + recentrage doux.
               <>
-                <Marker position={currentStep.point} icon={STEP_ICON} />
+                <Marker
+                  position={currentStep.point}
+                  icon={STEP_ICON}
+                  title={
+                    currentStep.title
+                      ? `Étape : ${currentStep.title}`
+                      : 'Étape en cours'
+                  }
+                />
                 <FollowStep point={currentStep.point} />
               </>
             ) : (
@@ -619,6 +635,7 @@ export default function MapPage() {
               key={incident.id}
               position={[incident.lat, incident.lon]}
               icon={incidentIcon(incident.type)}
+              title={`Signalement : ${incident.type_label || meta.label}`}
             >
               <Popup>
                 <span className="font-semibold text-slate-900">
@@ -637,7 +654,7 @@ export default function MapPage() {
                   <button
                     type="button"
                     onClick={() => handleVoteIncident(incident.id)}
-                    className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#1D9E75] transition hover:bg-[#1D9E75]/20"
+                    className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#0F7B58] transition hover:bg-[#1D9E75]/20"
                   >
                     <ThumbsUp className="size-3.5" aria-hidden="true" />
                     Confirmer ({incident.votes})
@@ -647,7 +664,7 @@ export default function MapPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteIncident(incident.id)}
-                      className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                      className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
                     >
                       <Trash2 className="size-3.5" aria-hidden="true" />
                       Supprimer
@@ -723,7 +740,7 @@ export default function MapPage() {
           className="absolute right-4 z-[1000] flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50"
           style={{ bottom: sheetHeight + NAV_HEIGHT + 12 }}
         >
-          <TriangleAlert className="size-4 text-[#1D9E75]" aria-hidden="true" />
+          <TriangleAlert className="size-4 text-[#0F7B58]" aria-hidden="true" />
           Signaler
         </Link>
       )}

@@ -101,7 +101,7 @@ export default function ForgotPassword() {
       )}
 
       <p className="mt-auto pt-8 text-center text-sm text-muted-foreground">
-        <Link to="/login" className="font-semibold text-primary transition hover:opacity-80">
+        <Link to="/login" className="font-semibold text-[#0F7B58] transition hover:opacity-80">
           Retour à la connexion
         </Link>
       </p>

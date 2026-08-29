@@ -32,7 +32,7 @@ export default function BottomNav() {
               end={end}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 text-xs font-medium transition ${
-                  isActive ? 'text-[#1D9E75]' : 'text-slate-400 hover:text-slate-600'
+                  isActive ? 'text-[#0F7B58]' : 'text-slate-500 hover:text-slate-600'
                 }`
               }
             >

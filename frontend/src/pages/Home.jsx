@@ -130,9 +130,9 @@ export default function Home() {
         {/* La recherche vit sur la carte : cette barre y conduit. */}
         <Link
           to="/map"
-          className="mx-auto mt-5 flex h-14 w-full max-w-md items-center gap-3 rounded-full bg-white px-5 text-sm text-slate-400 shadow-lg"
+          className="mx-auto mt-5 flex h-14 w-full max-w-md items-center gap-3 rounded-full bg-white px-5 text-sm text-slate-500 shadow-lg"
         >
-          <Search className="size-5 shrink-0 text-slate-400" aria-hidden="true" />
+          <Search className="size-5 shrink-0 text-slate-500" aria-hidden="true" />
           Où allez-vous ?
         </Link>
       </header>
@@ -146,7 +146,7 @@ export default function Home() {
               to={`/map?mode=${profile}`}
               className="flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300"
             >
-              <Icon className="size-4 text-[#1D9E75]" aria-hidden="true" />
+              <Icon className="size-4 text-[#0F7B58]" aria-hidden="true" />
               {label}
             </Link>
           ))}
@@ -165,7 +165,7 @@ export default function Home() {
               <h2 className="text-base font-semibold text-slate-900">Trajets récents</h2>
               {tripsFromCache && <OfflineBadge />}
             </div>
-            <Link to="/trajets" className="shrink-0 text-sm font-medium text-[#1D9E75]">
+            <Link to="/trajets" className="shrink-0 text-sm font-medium text-[#0F7B58]">
               Tout voir
             </Link>
           </div>
@@ -196,7 +196,7 @@ export default function Home() {
                             <div className="flex flex-col items-center pt-1.5">
                               <span className="size-2.5 rounded-full bg-slate-300" aria-hidden="true" />
                               <span className="my-1 h-5 w-px bg-slate-200" aria-hidden="true" />
-                              <MapPin className="size-3.5 text-[#1D9E75]" aria-hidden="true" />
+                              <MapPin className="size-3.5 text-[#0F7B58]" aria-hidden="true" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-semibold text-slate-900">
@@ -210,7 +210,7 @@ export default function Home() {
                         </div>
 
                         <div className="flex shrink-0 flex-col items-end gap-2">
-                          <span className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#1D9E75]">
+                          <span className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#0F7B58]">
                             <Leaf className="size-3.5" aria-hidden="true" />
                             {formatCo2(trajet.co2_economise_g)}
                           </span>

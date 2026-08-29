@@ -58,7 +58,7 @@ export default function JourneySteps({ journey }) {
                 }
               >
                 <Icon
-                  className={`size-4 ${section.line_color ? '' : 'text-[#1D9E75]'}`}
+                  className={`size-4 ${section.line_color ? '' : 'text-[#0F7B58]'}`}
                   aria-hidden="true"
                 />
               </span>

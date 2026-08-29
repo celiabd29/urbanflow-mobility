@@ -71,7 +71,7 @@ export default function ResetPassword() {
           .
         </p>
       ) : done ? (
-        <p className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary/10 px-4 py-4 text-sm font-semibold text-primary">
+        <p className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary/10 px-4 py-4 text-sm font-semibold text-[#0F7B58]">
           <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
           Mot de passe réinitialisé ! Redirection vers la connexion…
         </p>
@@ -134,7 +134,7 @@ export default function ResetPassword() {
       )}
 
       <p className="mt-auto pt-8 text-center text-sm text-muted-foreground">
-        <Link to="/login" className="font-semibold text-primary transition hover:opacity-80">
+        <Link to="/login" className="font-semibold text-[#0F7B58] transition hover:opacity-80">
           Retour à la connexion
         </Link>
       </p>

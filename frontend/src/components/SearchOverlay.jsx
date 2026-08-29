@@ -42,7 +42,7 @@ function AddressField({ id, placeholder, query, setQuery, point, setPoint, onErr
     <div className="relative">
       <div className="relative">
         <MapPin
-          className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-500"
           aria-hidden="true"
         />
         <input
@@ -60,7 +60,7 @@ function AddressField({ id, placeholder, query, setQuery, point, setPoint, onErr
         />
         {searching && (
           <Loader2
-            className="absolute right-4 top-1/2 size-4 -translate-y-1/2 animate-spin text-slate-400"
+            className="absolute right-4 top-1/2 size-4 -translate-y-1/2 animate-spin text-slate-500"
             aria-hidden="true"
           />
         )}
@@ -166,7 +166,7 @@ export default function SearchOverlay({
           type="button"
           onClick={useMyPosition}
           disabled={!userPosition}
-          className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-[#1D9E75] shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-[#0F7B58] shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-40"
         >
           <Crosshair className="size-3.5" aria-hidden="true" />
           Ma position

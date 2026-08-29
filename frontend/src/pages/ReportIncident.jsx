@@ -207,7 +207,7 @@ export default function ReportIncident() {
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200" aria-hidden="true" />
 
         <p className="flex items-center gap-2 text-sm text-slate-500">
-          <MapPin className="size-4 shrink-0 text-[#1D9E75]" aria-hidden="true" />
+          <MapPin className="size-4 shrink-0 text-[#0F7B58]" aria-hidden="true" />
           {addressLoading ? (
             <span className="flex items-center gap-1.5">
               <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
@@ -217,7 +217,7 @@ export default function ReportIncident() {
             address || `${position[0].toFixed(5)}, ${position[1].toFixed(5)}`
           )}
         </p>
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-[11px] text-slate-500">
           Déplacez la carte pour ajuster la position.
         </p>
 
@@ -236,7 +236,7 @@ export default function ReportIncident() {
                   aria-pressed={active}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 text-xs font-medium transition ${
                     active
-                      ? 'border-[#1D9E75] bg-[#1D9E75]/10 text-[#1D9E75]'
+                      ? 'border-[#1D9E75] bg-[#1D9E75]/10 text-[#0F7B58]'
                       : 'border-slate-200 bg-white text-slate-500'
                   }`}
                 >
@@ -253,7 +253,7 @@ export default function ReportIncident() {
             htmlFor="incident-comment"
             className="mb-1.5 block text-sm font-semibold text-slate-900"
           >
-            Commentaire <span className="font-normal text-slate-400">(optionnel)</span>
+            Commentaire <span className="font-normal text-slate-500">(optionnel)</span>
           </label>
           <textarea
             id="incident-comment"
@@ -267,7 +267,7 @@ export default function ReportIncident() {
         </div>
 
         {error && (
-          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -279,7 +279,7 @@ export default function ReportIncident() {
             connexion.
           </p>
         ) : done === 'sent' ? (
-          <p className="mt-4 flex h-14 items-center justify-center rounded-2xl bg-[#1D9E75]/10 text-sm font-semibold text-[#1D9E75]">
+          <p className="mt-4 flex h-14 items-center justify-center rounded-2xl bg-[#1D9E75]/10 text-sm font-semibold text-[#0F7B58]">
             Signalement enregistré, merci !
           </p>
         ) : (

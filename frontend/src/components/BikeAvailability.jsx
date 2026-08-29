@@ -43,7 +43,7 @@ export default function BikeAvailability({ point, label }) {
     <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Bike className="size-3.5 text-[#1D9E75]" aria-hidden="true" />
+          <Bike className="size-3.5 text-[#0F7B58]" aria-hidden="true" />
           {label}
         </span>
         {loading && (
