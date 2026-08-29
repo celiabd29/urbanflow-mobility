@@ -7,7 +7,7 @@ Une migration ne s'exécutant qu'une fois, il en faut une nouvelle.
 On cible cette fois tout le domaine @urbanflow.app, réservé aux tests, plutôt
 qu'une liste nominative : cela couvre aussi les comptes éventuellement oubliés.
 Le compte de démonstration du jury est sur urbanflow.fr et n'est donc pas
-concerné — une garde explicite le protège en plus.
+concerné, une garde explicite le protège en plus.
 """
 
 import os

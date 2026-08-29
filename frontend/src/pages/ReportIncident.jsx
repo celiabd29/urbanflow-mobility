@@ -275,7 +275,7 @@ export default function ReportIncident() {
         {done === 'queued' ? (
           <p className="mt-4 flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
             <CloudUpload className="size-4 shrink-0" aria-hidden="true" />
-            Signalement enregistré localement — il sera envoyé au retour de
+            Signalement enregistré localement, il sera envoyé au retour de
             connexion.
           </p>
         ) : done === 'sent' ? (

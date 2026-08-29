@@ -87,7 +87,7 @@ export default function MobilityProfile() {
         </header>
 
         <form onSubmit={handleSubmit} className="mt-8 flex flex-1 flex-col">
-          {/* Modes de transport — sélection multiple */}
+          {/* Modes de transport, sélection multiple */}
           <fieldset>
             <legend className="text-sm font-semibold text-slate-900">
               Modes de transport préférés

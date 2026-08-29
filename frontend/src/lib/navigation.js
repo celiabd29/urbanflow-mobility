@@ -50,7 +50,7 @@ export function buildNavSteps(route, profile) {
       }))
   }
 
-  // ORS : marche / vélo / voiture — pas-à-pas fourni par le backend.
+  // ORS : marche / vélo / voiture, pas-à-pas fourni par le backend.
   return (route.steps || []).map((s) => ({
     kind: 'road',
     turnType: s.type,

@@ -94,7 +94,7 @@ function AddressField({ id, placeholder, query, setQuery, point, setPoint, onErr
  *
  * Deux visages selon l'état de l'écran. En saisie, les deux champs sont
  * dépliés ; une fois l'itinéraire calculé, seule la destination reste, sur une
- * seule ligne, comme sur la maquette écran 4 — la carte reprend la place.
+ * seule ligne, comme sur la maquette écran 4, la carte reprend la place.
  */
 export default function SearchOverlay({
   phase,

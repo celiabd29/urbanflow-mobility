@@ -11,6 +11,6 @@ urlpatterns = [
     # GET    : détail d'un signalement (public).
     # DELETE : suppression de son propre signalement (authentifié, propriétaire).
     path("<int:pk>/", views.signalement_detail_view, name="detail"),
-    # POST : confirmer un signalement (authentifié) — incrémente le compteur.
+    # POST : confirmer un signalement (authentifié), incrémente le compteur.
     path("<int:pk>/voter/", views.vote_signalement_view, name="vote"),
 ]

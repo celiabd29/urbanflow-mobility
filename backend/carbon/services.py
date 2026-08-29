@@ -2,7 +2,7 @@
 
 Facteurs d'émission de référence : ADEME (documentés dans le dossier
 technique). Navitia fournit aussi un CO₂ par section, mais avec ses propres
-facteurs — sur un trajet RER de 12,3 km il annonce 67,9 g contre 49,4 g avec
+facteurs : sur un trajet RER de 12,3 km il annonce 67,9 g contre 49,4 g avec
 l'ADEME. On s'en tient aux facteurs du dossier pour que l'application et la
 documentation disent la même chose.
 """

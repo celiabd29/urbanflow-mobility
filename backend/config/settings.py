@@ -128,10 +128,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Sélection de la base, par ordre de priorité :
-#   1. DATABASE_URL  — variable standard fournie par Railway, Heroku, etc.
+#   1. DATABASE_URL : variable standard fournie par Railway, Heroku, etc.
 #                      C'est celle qu'injecte le service PostgreSQL de Railway.
-#   2. variables PG* séparées — utile si on les définit à la main.
-#   3. SQLite — uniquement pour le développement local.
+#   2. variables PG* séparées : utile si on les définit à la main.
+#   3. SQLite : uniquement pour le développement local.
 #
 # Attention : sur Railway, SQLite vit sur un disque éphémère. Toute donnée
 # écrite dedans disparaît au redéploiement suivant, d'où l'avertissement
@@ -246,7 +246,7 @@ OWMAP_API_KEY = os.environ.get('OWMAP_API_KEY', '')
 
 # Cache mémoire pour amortir les appels aux APIs externes (TTL de 60 s défini
 # dans transport/services/base.py). Local au processus : avec plusieurs
-# workers gunicorn, chacun a le sien — acceptable pour une durée aussi courte.
+# workers gunicorn, chacun a le sien, acceptable pour une durée aussi courte.
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -301,7 +301,7 @@ REST_FRAMEWORK = {
     ),
     # Limitation anti brute-force : la vue de login (scope « login ») est
     # plafonnée à 5 tentatives par minute et par IP. Le compteur s'appuie sur
-    # le cache par défaut (LocMemCache) — par process gunicorn, donc à multiplier
+    # le cache par défaut (LocMemCache), par process gunicorn, donc à multiplier
     # par le nombre de workers, ce qui reste protecteur pour ce prototype.
     'DEFAULT_THROTTLE_RATES': {
         # Désactivé pendant la suite de tests (None), 5/min/IP en usage réel.

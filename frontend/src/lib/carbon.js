@@ -22,7 +22,7 @@ export async function deleteTrajet(id) {
 /**
  * Empreinte d'un trajet sans l'enregistrer.
  * Sert à afficher l'économie dès le calcul de l'itinéraire, comme aide au
- * choix du mode — les facteurs ADEME restent côté serveur.
+ * choix du mode, les facteurs ADEME restent côté serveur.
  */
 export async function estimateFootprint(segments, { signal } = {}) {
   const { data } = await api.post(
@@ -110,7 +110,7 @@ export function routeToSegments(route, profile) {
 
 /** 1438.3 g -> "1,44 kg" ; 49.4 g -> "49 g" */
 export function formatCo2(grams) {
-  if (grams == null) return '—'
+  if (grams == null) return '-'
   if (grams >= 1000) {
     return `${(grams / 1000).toFixed(2).replace('.', ',')} kg`
   }

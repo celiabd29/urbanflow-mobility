@@ -25,7 +25,7 @@ const transportModes = [
 const recentTrips = [
   {
     from: 'Domicile',
-    to: 'Bureau — La Défense',
+    to: 'Bureau, La Défense',
     mode: 'Vélo · 24 min',
     co2: '1,2 kg',
   },

@@ -58,7 +58,7 @@ export async function getProfiles() {
 
 /** 1186 -> "1,2 km" ; 850 -> "850 m" */
 export function formatDistance(meters) {
-  if (meters == null) return '—'
+  if (meters == null) return '-'
   return meters >= 1000
     ? `${(meters / 1000).toFixed(1).replace('.', ',')} km`
     : `${Math.round(meters)} m`
@@ -66,7 +66,7 @@ export function formatDistance(meters) {
 
 /** 852 -> "14 min" ; 4500 -> "1 h 15" */
 export function formatDuration(seconds) {
-  if (seconds == null) return '—'
+  if (seconds == null) return '-'
   const total = Math.round(seconds / 60)
   const hours = Math.floor(total / 60)
   const minutes = total % 60

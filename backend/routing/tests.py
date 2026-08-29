@@ -206,7 +206,7 @@ class TransitRoutingTests(APITestCase):
     def test_transit_totals_the_section_distances(self, mock_fetch):
         """
         Navitia ne donne pas de distance totale. Sans somme des sections,
-        l'écran affichait « — » à côté d'une durée et d'une empreinte carbone
+        l'écran affichait « - » à côté d'une durée et d'une empreinte carbone
         pourtant calculées sur ces mêmes distances.
         """
         mock_fetch.return_value = PRIM_JOURNEYS

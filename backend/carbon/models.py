@@ -41,4 +41,4 @@ class Trajet(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user} — {self.distance_km} km, {self.co2_economise} g économisés"
+        return f"{self.user} : {self.distance_km} km, {self.co2_economise} g économisés"

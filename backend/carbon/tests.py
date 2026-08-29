@@ -144,7 +144,7 @@ class TrajetEndpointTests(APITestCase):
             {
                 "segments": [{"mode": "bike", "distance_km": 6.2}],
                 "depart": "Domicile, Paris",
-                "arrivee": "Bureau — La Défense",
+                "arrivee": "Bureau, La Défense",
             },
             format="json",
         )
@@ -152,7 +152,7 @@ class TrajetEndpointTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["depart"], "Domicile, Paris")
         trajet = Trajet.objects.get(pk=response.data["id"])
-        self.assertEqual(trajet.arrivee, "Bureau — La Défense")
+        self.assertEqual(trajet.arrivee, "Bureau, La Défense")
 
     def test_addresses_are_optional(self):
         """Les trajets enregistrés avant cet ajout restent valides."""

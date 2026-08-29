@@ -129,7 +129,7 @@ export default function RouteSheet({
           <div className="mt-4 flex flex-col gap-3">
             {from && <WeatherBanner point={from} profile={profile} />}
             {/* Perturbations : uniquement pour le mode Transports (transport en
-                commun) — sans objet pour vélo / voiture / marche. */}
+                commun), sans objet pour vélo / voiture / marche. */}
             {profile === 'transit' && <DisruptionAlert />}
           </div>
         )}

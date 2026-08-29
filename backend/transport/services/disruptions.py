@@ -94,7 +94,7 @@ def _wanted_prim_modes(modes):
     Renvoie None seulement si aucun mode n'est demandé (= pas de filtre).
     Un ensemble vide est une réponse légitime : un profil « vélo » ou
     « voiture » ne correspond à aucun réseau de transport en commun, et doit
-    donc ne remonter aucune perturbation — surtout pas toutes.
+    donc ne remonter aucune perturbation, surtout pas toutes.
     """
     if not modes:
         return None  # aucun filtre : on renvoie tous les modes

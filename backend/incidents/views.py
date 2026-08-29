@@ -24,7 +24,7 @@ MAX_RESULTS = 100
 
 
 def _serialise(signalement, distance_m=None, current_user=None):
-    # is_owner : booléen pour le demandeur uniquement — permet au frontend
+    # is_owner : booléen pour le demandeur uniquement, permet au frontend
     # d'afficher « Supprimer » sur ses propres signalements, sans exposer
     # l'identité des auteurs des autres.
     is_owner = bool(

@@ -1,7 +1,7 @@
 """Endpoint de diagnostic : quelle base de données tourne réellement ?
 
-Volontairement limité au strict nécessaire — moteur, origine de la
-configuration et persistance — pour ne divulguer aucun identifiant.
+Volontairement limité au strict nécessaire (moteur, origine de la
+configuration et persistance) pour ne divulguer aucun identifiant.
 """
 
 from django.conf import settings

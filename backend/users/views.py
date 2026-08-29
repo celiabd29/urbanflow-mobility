@@ -92,7 +92,7 @@ _RESET_GENERIC = (
 @permission_classes([AllowAny])
 def password_reset_request_view(request):
     """
-    POST /api/users/password-reset/request/  — corps : { "email": "..." }
+    POST /api/users/password-reset/request/. Corps : { "email": "..." }
 
     Génère un token de réinitialisation à durée de vie courte
     (PASSWORD_RESET_TIMEOUT). Sans envoi d'email : le token et l'uid sont

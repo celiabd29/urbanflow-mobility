@@ -50,7 +50,7 @@ const COLLAPSED_HEIGHT = 236
  * Hauteur du cran étendu.
  *
  * Plafonnée à 62 % : au-delà, il ne restait qu'une bande d'environ 70 px de
- * carte, insuffisante pour cadrer le tracé et ses pastilles A/B — le point de
+ * carte, insuffisante pour cadrer le tracé et ses pastilles A/B, le point de
  * départ finissait sous le panneau. Le contenu défile de toute façon.
  */
 function expandedHeight() {
@@ -131,7 +131,7 @@ function formatIncidentDate(value) {
   })
 }
 
-// Recentre sur l'utilisateur — sauf si un itinéraire est affiché,
+// Recentre sur l'utilisateur, sauf si un itinéraire est affiché,
 // auquel cas c'est le cadrage de l'itinéraire qui prime.
 function RecenterMap({ position, disabled }) {
   const map = useMap()
@@ -314,7 +314,7 @@ export default function MapPage() {
 
   // Charge les signalements actifs à afficher sur la carte (endpoint public).
   // Network-first : frais si le réseau répond, sinon le dernier instantané
-  // IndexedDB — comme les trajets et le dernier itinéraire.
+  // IndexedDB, comme les trajets et le dernier itinéraire.
   const loadIncidents = useCallback(async () => {
     try {
       const { data, fromCache } = await networkFirst('signalements', () =>
@@ -338,7 +338,7 @@ export default function MapPage() {
 
   // Hors ligne au chargement : on restitue le dernier itinéraire calculé
   // (figé) pour que la carte ne soit pas vide. En ligne, comportement normal
-  // — le calcul d'itinéraire (ORS/PRIM) reste un appel réseau.
+  // le calcul d'itinéraire (ORS/PRIM) reste un appel réseau.
   useEffect(() => {
     if (navigator.onLine) return
     let active = true

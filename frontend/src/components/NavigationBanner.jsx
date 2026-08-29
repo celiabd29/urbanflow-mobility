@@ -58,7 +58,7 @@ function distanceLabel(step) {
 
 /**
  * Bandeau haut : instruction de l'étape en cours, bien en évidence, dans le
- * style sombre #0F172A de l'app. Pas de suivi GPS temps réel ici — juste
+ * style sombre #0F172A de l'app. Pas de suivi GPS temps réel ici, juste
  * l'affichage clair de l'étape courante.
  */
 export default function NavigationBanner({ step, index, total, onExit }) {

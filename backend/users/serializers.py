@@ -46,7 +46,7 @@ def validate_transport_preferences_payload(value):
 
     # La fréquence est facultative : le défaut du modèle est None et l'écran
     # Profil ne l'édite pas (on n'y modifie que les modes). On refuse donc
-    # seulement une valeur *renseignée mais invalide*, pas son absence — sinon
+    # seulement une valeur *renseignée mais invalide*, pas son absence, sinon
     # tout utilisateur dont la fréquence n'a jamais été définie serait incapable
     # de modifier ses modes de transport.
     frequency = value.get("frequency")

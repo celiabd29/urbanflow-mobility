@@ -19,7 +19,7 @@ const MAX_VISIBLE = 3
  * - Portée « profil » (par défaut) : pour les trajets ORS (vélo, marche,
  *   voiture), qui ne contiennent aucune ligne. On ne peut alors rien affirmer
  *   sur l'itinéraire lui-même, seulement sur les modes déclarés par
- *   l'utilisateur — et le libellé le dit.
+ *   l'utilisateur, et le libellé le dit.
  */
 export default function DisruptionAlert({
   routeDisruptions = null,

@@ -157,7 +157,7 @@ class WeatherTests(APITestCase):
     def test_upcoming_rain_is_detected_while_currently_dry(self, mock_fetch):
         """
         Cas visé par la fonctionnalité : il fait beau maintenant, mais la
-        pluie arrive — c'est ce qui doit dissuader de prendre le vélo.
+        pluie arrive, c'est ce qui doit dissuader de prendre le vélo.
         """
         mock_fetch.side_effect = [_owm_current(), _owm_forecast([803, 501])]
         self.authenticate()

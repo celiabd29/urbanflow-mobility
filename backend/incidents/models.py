@@ -52,4 +52,4 @@ class Signalement(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.get_type_display()} — {self.adresse or 'sans adresse'}"
+        return f"{self.get_type_display()} : {self.adresse or 'sans adresse'}"

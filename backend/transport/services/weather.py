@@ -86,7 +86,7 @@ def upcoming_precipitation(lat, lon):
     """
     Précipitations attendues dans les prochaines heures.
 
-    Renvoie None si rien n'est prévu, sinon le premier créneau concerné —
+    Renvoie None si rien n'est prévu, sinon le premier créneau concerné,
     ce qui permet de dire « pluie prévue » plutôt que « il pleut ».
     """
     payload = fetch_json(
