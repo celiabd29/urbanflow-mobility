@@ -13,12 +13,12 @@ copié ici pour être versionné plutôt que de dépendre du dossier `Downloads`
 
 | Dossier | Description |
 |---|---|
-| `v0/maquettes/` | Captures annotées « ÉCRAN N — … » |
+| `v0/maquettes/` | Captures annotées « ÉCRAN N : … » |
 | `v0/components/` | Les écrans en Next.js / TSX (référence, non branchés à l'app) |
 | `v0/globals.css` | Design system (tokens de thème) |
 | `v0/lib/`, `v0/components.json` | Helper `cn()` et config shadcn |
 
-## Les 7 écrans — maquette → écran réel
+## Les 7 écrans : maquette vers écran réel
 
 | N° | Écran | Thème | Maquette | Écran réel |
 |----|-------|-------|----------|------------|
@@ -46,9 +46,9 @@ la maquette.
 
 | Maquette | Statut |
 |---|---|
-| « Continuer avec Google » (`login-screen.tsx`) | Non implémenté — OAuth hors périmètre v1 ; remplacé par « Mot de passe oublié ? » |
-| Crayon d'édition du profil (`profile-screen.tsx`) | Non fonctionnel — affiché « Bientôt disponible » |
-| « Ajouter une photo » sur signalement (`incident-screen.tsx`) | Non implémenté — stockage Railway éphémère (Cloudinary envisagé en évolution) |
+| « Continuer avec Google » (`login-screen.tsx`) | Non implémenté : OAuth hors périmètre v1 ; remplacé par « Mot de passe oublié ? » |
+| Crayon d'édition du profil (`profile-screen.tsx`) | Non fonctionnel : affiché « Bientôt disponible » |
+| « Ajouter une photo » sur signalement (`incident-screen.tsx`) | Non implémenté : stockage Railway éphémère (Cloudinary envisagé en évolution) |
 
 ## Design system
 
@@ -65,12 +65,12 @@ utilisent en plus des couleurs explicites (`#f8fafc`, `#1D9E75`, etc.).
 L'application réelle ajoute plusieurs fonctionnalités absentes des maquettes v0 :
 
 - **Transport en commun** : itinéraires multimodaux via l'API **PRIM** (moteur
-  Navitia d'Île-de-France Mobilités) — l'écart technique « ORS ne fait pas de
+  Navitia d'Île-de-France Mobilités) : l'écart technique « ORS ne fait pas de
   transport public » est **résolu** (ORS reste utilisé pour vélo/marche/voiture).
 - **Navigation pas-à-pas** (turn-by-turn) : `components/NavigationBanner.jsx`,
   `components/NavigationSheet.jsx`.
 - **Mode hors ligne (PWA)** : service worker, cache des tuiles et des données,
-  file de rejeu des signalements — `components/OfflineBadge.jsx`,
+  file de rejeu des signalements : `components/OfflineBadge.jsx`,
   `lib/offlineStore.js`, `lib/reportSync.js`.
 - **Réinitialisation de mot de passe** : `pages/ForgotPassword.jsx`,
   `pages/ResetPassword.jsx`.
