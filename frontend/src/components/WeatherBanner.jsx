@@ -79,7 +79,7 @@ export default function WeatherBanner({ point, profile }) {
     return (
       <p className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
         <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-        Météo au départ…
+        Météo…
       </p>
     )
   }

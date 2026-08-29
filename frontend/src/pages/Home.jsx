@@ -7,7 +7,12 @@ import { networkFirst, readCache, saveCache } from '@/lib/offlineStore'
 import BottomNav from '@/components/BottomNav'
 import OfflineBadge from '@/components/OfflineBadge'
 import TripDeleteButton from '@/components/TripDeleteButton'
+import WeatherBanner from '@/components/WeatherBanner'
 import { formatDuration } from '@/lib/routing'
+
+// Position par défaut (centre de Paris) : la météo s'affiche même si la
+// géolocalisation est refusée, et se précise si elle est autorisée.
+const PARIS_POINT = { lat: 48.8566, lon: 2.3522 }
 
 // Chips de mode : chacune ouvre la carte avec le profil déjà sélectionné,
 // plutôt que d'être un simple élément décoratif.
@@ -36,6 +41,17 @@ export default function Home() {
   const [trajets, setTrajets] = useState([])
   const [tripsFromCache, setTripsFromCache] = useState(false)
   const [summary, setSummary] = useState(null)
+  // Point pour la météo : Paris par défaut, précisé par la géolocalisation.
+  const [weatherPoint, setWeatherPoint] = useState(PARIS_POINT)
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setWeatherPoint({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      () => {}, // refus ou erreur : on garde Paris, sans déranger l'utilisateur
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 },
+    )
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -134,6 +150,12 @@ export default function Home() {
               {label}
             </Link>
           ))}
+        </div>
+
+        {/* Météo à la position de l'utilisateur (repli sur Paris). Sans mode
+            sélectionné : conditions actuelles seulement, sans alerte. */}
+        <div className="mt-4">
+          <WeatherBanner point={weatherPoint} />
         </div>
 
         {/* Trajets récents */}
