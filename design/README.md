@@ -1,4 +1,4 @@
-# Maquettes v0 — UrbanFlow Mobility
+# Maquettes v0 | UrbanFlow Mobility
 
 Référence de **conception** de l'application. Source : export v0 (Next.js + Tailwind v4 + shadcn),
 copié ici pour être versionné plutôt que de dépendre du dossier `Downloads`.
