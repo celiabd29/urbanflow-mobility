@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ThumbsUp, Trash2, TriangleAlert } from 'lucide-react'
+import { Bike, ThumbsUp, Trash2, TriangleAlert } from 'lucide-react'
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -16,6 +16,7 @@ import SearchOverlay from '@/components/SearchOverlay'
 import api from '@/lib/api'
 import { estimateFootprint, routeToSegments, saveTrajet } from '@/lib/carbon'
 import { buildNavSteps, distanceMeters } from '@/lib/navigation'
+import { getBikeAvailability } from '@/lib/transport'
 import { networkFirst, readCache, saveCache } from '@/lib/offlineStore'
 import { onPendingChanged } from '@/lib/reportSync'
 import {
@@ -183,6 +184,110 @@ function FollowStep({ point }) {
   return null
 }
 
+// Pastille d'une station de vélos : nombre de vélos dispos, verte si > 0,
+// grise si la station est vide. Mémorisée par valeur pour éviter de recréer
+// une icône à chaque rendu.
+const velibIconCache = {}
+function velibIcon(count) {
+  if (velibIconCache[count] !== undefined) return velibIconCache[count]
+  const background = count > 0 ? '#0F7B58' : '#94a3b8'
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:26px;height:26px;border-radius:9999px;background:${background};
+      color:#fff;display:flex;align-items:center;justify-content:center;
+      font:700 11px/1 ui-sans-serif,system-ui,sans-serif;
+      box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff;
+    ">${count}</div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  })
+  velibIconCache[count] = icon
+  return icon
+}
+
+/**
+ * Couche des stations de vélos en libre-service, autour du centre visible de
+ * la carte. Rechargée au déplacement (léger debounce). Données Open Data Paris
+ * (Vélib') + JCDecaux, via notre backend.
+ */
+function VelibLayer({ active }) {
+  const map = useMap()
+  const [stations, setStations] = useState([])
+
+  useEffect(() => {
+    if (!active) {
+      setStations([])
+      return
+    }
+    let cancelled = false
+    let controller
+    let debounce
+
+    const load = () => {
+      controller?.abort()
+      controller = new AbortController()
+      const center = map.getCenter()
+      getBikeAvailability(center.lat, center.lng, 800, { signal: controller.signal })
+        .then((data) => {
+          if (!cancelled) setStations(data.stations || [])
+        })
+        .catch(() => {
+          // Panne réseau ou fournisseur indisponible : on n'affiche rien.
+        })
+    }
+
+    load()
+    const onMove = () => {
+      clearTimeout(debounce)
+      debounce = setTimeout(load, 500)
+    }
+    map.on('moveend', onMove)
+
+    return () => {
+      cancelled = true
+      controller?.abort()
+      clearTimeout(debounce)
+      map.off('moveend', onMove)
+    }
+  }, [active, map])
+
+  if (!active) return null
+
+  return (
+    <>
+      {stations.map((station) => (
+        <Marker
+          key={`${station.provider}-${station.station_id}`}
+          position={[station.lat, station.lon]}
+          icon={velibIcon(station.bikes_available)}
+          title={`Vélib' : ${station.name} (${station.bikes_available} vélos)`}
+        >
+          <Popup>
+            <span className="font-semibold text-slate-900">{station.name}</span>
+            <span className="mt-1 block text-slate-700">
+              {station.bikes_available} vélo
+              {station.bikes_available > 1 ? 's' : ''} disponible
+              {station.bikes_available > 1 ? 's' : ''}
+            </span>
+            <span className="mt-0.5 block text-slate-500">
+              {station.mechanical_bikes} mécanique
+              {station.mechanical_bikes > 1 ? 's' : ''} ·{' '}
+              {station.electric_bikes} électrique
+              {station.electric_bikes > 1 ? 's' : ''}
+            </span>
+            <span className="mt-0.5 block text-slate-500">
+              {station.docks_available} borne
+              {station.docks_available > 1 ? 's' : ''} libre
+              {station.docks_available > 1 ? 's' : ''}
+            </span>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  )
+}
+
 export default function MapPage() {
   const [searchParams] = useSearchParams()
 
@@ -233,6 +338,9 @@ export default function MapPage() {
   const [phase, setPhase] = useState('search') // search | result
   const [expanded, setExpanded] = useState(false)
   const [maxHeight, setMaxHeight] = useState(expandedHeight)
+
+  // --- Stations de vélos en libre-service (bascule) ---
+  const [showVelib, setShowVelib] = useState(false)
 
   // --- Navigation pas à pas ---
   const [navigating, setNavigating] = useState(false)
@@ -676,6 +784,9 @@ export default function MapPage() {
           )
         })}
 
+        {/* Stations de vélos en libre-service, masquées pendant la navigation. */}
+        <VelibLayer active={showVelib && !navigating} />
+
         <RecenterMap position={position} disabled={Boolean(route)} />
       </MapContainer>
 
@@ -735,14 +846,35 @@ export default function MapPage() {
       )}
 
       {!navigating && (
-        <Link
-          to="/signaler"
-          className="absolute right-4 z-[1000] flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50"
-          style={{ bottom: sheetHeight + NAV_HEIGHT + 12 }}
-        >
-          <TriangleAlert className="size-4 text-[#0F7B58]" aria-hidden="true" />
-          Signaler
-        </Link>
+        <>
+          {/* Bascule d'affichage des stations de vélos en libre-service. */}
+          <button
+            type="button"
+            aria-pressed={showVelib}
+            onClick={() => setShowVelib((v) => !v)}
+            className={`absolute right-4 z-[1000] flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold shadow-lg transition ${
+              showVelib
+                ? 'bg-[#0F7B58] text-white hover:bg-[#0c6a4c]'
+                : 'bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+            style={{ bottom: sheetHeight + NAV_HEIGHT + 64 }}
+          >
+            <Bike
+              className={`size-4 ${showVelib ? 'text-white' : 'text-[#0F7B58]'}`}
+              aria-hidden="true"
+            />
+            Vélib&apos;
+          </button>
+
+          <Link
+            to="/signaler"
+            className="absolute right-4 z-[1000] flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50"
+            style={{ bottom: sheetHeight + NAV_HEIGHT + 12 }}
+          >
+            <TriangleAlert className="size-4 text-[#0F7B58]" aria-hidden="true" />
+            Signaler
+          </Link>
+        </>
       )}
 
       {navigating ? (
