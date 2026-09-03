@@ -45,8 +45,16 @@ def geocode_view(request):
             status=400,
         )
 
+    # Biais optionnel vers un point (ex. centre de la carte). À défaut, geocode
+    # utilise Paris. On ne biaise que si les deux coordonnées sont valides.
+    focus = None
+    lat, lat_error = _parse_coordinate(request.query_params.get('lat'), 'lat', -90, 90)
+    lng, lng_error = _parse_coordinate(request.query_params.get('lng'), 'lng', -180, 180)
+    if not lat_error and not lng_error:
+        focus = (lng, lat)
+
     try:
-        results = geocode(query)
+        results = geocode(query, focus=focus)
     except RoutingError as exc:
         return Response({'detail': exc.message}, status=exc.status)
 

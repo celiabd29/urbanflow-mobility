@@ -33,12 +33,31 @@ def _headers():
     return {'Authorization': key, 'Content-Type': 'application/json'}
 
 
-def geocode(query, limit=5):
-    """Convertit une adresse en liste de coordonnées candidates."""
+# Point de biais du géocodage : centre de Paris. Sans lui, une adresse ambiguë
+# (« Rue de l'Église », « 8 rue de la fontaine »...) peut être résolue vers une
+# commune lointaine plutôt que vers la région parisienne visée par l'app.
+PARIS_FOCUS = (2.3522, 48.8566)  # (lon, lat)
+
+
+def geocode(query, limit=5, focus=None):
+    """
+    Convertit une adresse en liste de coordonnées candidates.
+
+    `focus` (lon, lat) biaise le classement des résultats vers ce point (par
+    défaut Paris) : les adresses proches remontent en tête, sans pour autant
+    exclure le reste de la France.
+    """
+    focus_lon, focus_lat = focus or PARIS_FOCUS
     try:
         response = requests.get(
             f'{ORS_BASE}/geocode/search',
-            params={'text': query, 'size': limit, 'boundary.country': 'FR'},
+            params={
+                'text': query,
+                'size': limit,
+                'boundary.country': 'FR',
+                'focus.point.lon': focus_lon,
+                'focus.point.lat': focus_lat,
+            },
             headers=_headers(),
             timeout=TIMEOUT,
         )
