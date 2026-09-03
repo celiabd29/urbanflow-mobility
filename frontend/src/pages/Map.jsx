@@ -41,6 +41,14 @@ L.Icon.Default.mergeOptions({
 const PARIS = [48.8566, 2.3522]
 const ROUTE_COLOR = '#1d9e75' // vert primaire UrbanFlow
 
+// Au rejeu d'un trajet, certains libellés stockés ne sont pas des adresses
+// géocodables : « Ma position » (la géoloc au moment du trajet) ou un libellé
+// vide. Les géocoder donnerait un point aberrant (une commune homonyme au
+// hasard), on les ignore donc et l'utilisateur redéfinit ce point.
+function isGeocodableLabel(label) {
+  return Boolean(label) && label.trim().toLowerCase() !== 'ma position'
+}
+
 
 // Hauteur du panneau réduit : poignée, chips/en-tête et bouton d'action. La
 // barre de navigation est en dessous (le panneau est posé à bottom: NAV_HEIGHT),
@@ -395,7 +403,7 @@ export default function MapPage() {
     if (!replayParams.from && !replayParams.to) return
     let active = true
     ;(async () => {
-      if (replayParams.from) {
+      if (isGeocodableLabel(replayParams.from)) {
         setFromQuery(replayParams.from)
         try {
           const results = await geocode(replayParams.from)
@@ -404,7 +412,7 @@ export default function MapPage() {
           // Géocodage indisponible : les champs restent éditables manuellement.
         }
       }
-      if (replayParams.to) {
+      if (isGeocodableLabel(replayParams.to)) {
         setToQuery(replayParams.to)
         try {
           const results = await geocode(replayParams.to)
