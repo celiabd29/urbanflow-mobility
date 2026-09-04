@@ -354,8 +354,34 @@ export default function MapPage() {
   // --- Navigation pas à pas ---
   const [navigating, setNavigating] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
+  // Itinéraire retenu parmi les propositions transport en commun (0 = le
+  // meilleur). Sans objet pour les itinéraires ORS (une seule proposition).
+  const [selectedJourney, setSelectedJourney] = useState(0)
+
+  // Trajet effectivement affiché : pour le transport en commun, on remonte la
+  // proposition choisie en tête et on aligne tracé, durée et distance dessus.
+  // Ainsi tout ce qui lit journeys[0] / coordinates / duration_s reste correct.
+  const activeRoute = useMemo(() => {
+    const list = route?.journeys
+    if (!list?.length) return route
+    const index = Math.min(selectedJourney, list.length - 1)
+    const chosen = list[index]
+    return {
+      ...route,
+      coordinates: chosen.coordinates,
+      distance_m: chosen.distance_m,
+      duration_s: chosen.duration_s,
+      journeys: [chosen, ...list.filter((_, i) => i !== index)],
+    }
+  }, [route, selectedJourney])
+
+  // Un nouveau calcul (ou un trajet rejoué) repart sur la meilleure proposition.
+  useEffect(() => {
+    setSelectedJourney(0)
+  }, [route])
+
   // Étapes de guidage, unifiées entre ORS (steps) et transit (sections).
-  const navSteps = useMemo(() => buildNavSteps(route, profile), [route, profile])
+  const navSteps = useMemo(() => buildNavSteps(activeRoute, profile), [activeRoute, profile])
   const currentStep = navSteps[stepIndex] || null
 
   const sheetHeight = expanded ? maxHeight : COLLAPSED_HEIGHT
@@ -536,7 +562,7 @@ export default function MapPage() {
 
   // Estime l'empreinte du trajet calculé, sans rien enregistrer.
   useEffect(() => {
-    const segments = routeToSegments(route, profile)
+    const segments = routeToSegments(activeRoute, profile)
     if (segments.length === 0) {
       setEstimate(null)
       return
@@ -550,7 +576,7 @@ export default function MapPage() {
       .catch(() => setEstimate(null))
 
     return () => controller.abort()
-  }, [route, profile])
+  }, [activeRoute, profile])
 
   /**
    * Calcule l'itinéraire. Le mode est passé explicitement pour que le
@@ -614,7 +640,7 @@ export default function MapPage() {
   // pas à pas (les deux, comme demandé).
   async function handleStart() {
     setError('')
-    const segments = routeToSegments(route, profile)
+    const segments = routeToSegments(activeRoute, profile)
     if (segments.length === 0 && navSteps.length === 0) {
       setError("Ce trajet n'a pas de distance exploitable.")
       return
@@ -634,7 +660,7 @@ export default function MapPage() {
           await saveTrajet(segments, {
             depart: from?.label,
             arrivee: to?.label,
-            dureeS: Math.round(route?.duration_s || 0),
+            dureeS: Math.round(activeRoute?.duration_s || 0),
           }),
         )
         // Sans navigation, on déplie pour rendre la confirmation visible.
@@ -712,7 +738,7 @@ export default function MapPage() {
         {route && (
           <>
             <Polyline
-              positions={route.coordinates}
+              positions={activeRoute.coordinates}
               pathOptions={{ color: ROUTE_COLOR, weight: 5, opacity: 0.85 }}
             />
             <Marker
@@ -745,7 +771,7 @@ export default function MapPage() {
               </>
             ) : (
               <FitRoute
-                coordinates={route.coordinates}
+                coordinates={activeRoute.coordinates}
                 bottomInset={sheetHeight + NAV_HEIGHT + 12}
               />
             )}
@@ -912,7 +938,10 @@ export default function MapPage() {
           profiles={profiles}
           profile={profile}
           onProfileChange={handleProfileChange}
-          result={route}
+          result={activeRoute}
+          journeys={route?.journeys}
+          selectedJourney={selectedJourney}
+          onSelectJourney={setSelectedJourney}
           estimate={estimate}
           loading={loading}
           saving={saving}

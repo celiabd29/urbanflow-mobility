@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Leaf } from 'lucide-react'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
 import JourneySteps from '@/components/JourneySteps'
+import JourneyOptions from '@/components/JourneyOptions'
 import WeatherBanner from '@/components/WeatherBanner'
 import { formatCo2 } from '@/lib/carbon'
 import { PROFILE_LABELS, formatDistance, formatDuration } from '@/lib/routing'
@@ -51,6 +52,9 @@ export default function RouteSheet({
   profile,
   onProfileChange,
   result,
+  journeys,
+  selectedJourney,
+  onSelectJourney,
   estimate,
   loading,
   saving,
@@ -157,6 +161,15 @@ export default function RouteSheet({
               ) : (
                 <DisruptionAlert />
               ))}
+
+            {/* Choix parmi les itinéraires en transport en commun proposés. */}
+            {profile === 'transit' && (
+              <JourneyOptions
+                journeys={journeys}
+                selected={selectedJourney}
+                onSelect={onSelectJourney}
+              />
+            )}
 
             {result?.journeys?.[0] && <JourneySteps journey={result.journeys[0]} />}
 
