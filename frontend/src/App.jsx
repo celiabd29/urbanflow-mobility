@@ -13,6 +13,7 @@ import CarbonFootprint from '@/pages/CarbonFootprint'
 import Trips from '@/pages/Trips'
 import Profile from '@/pages/Profile'
 import ReportIncident from '@/pages/ReportIncident'
+import AdminDashboard from '@/pages/AdminDashboard'
 
 // Garde d'authentification : sans token, on renvoie vers /login.
 function RequireAuth({ children }) {
@@ -96,6 +97,16 @@ function App() {
       {/* Réinitialisation de mot de passe (public, sans email). */}
       <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
       <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
+      {/* Tableau de bord d'administration : l'écran redirige lui-même les
+          non-admins (403 de l'API). */}
+      <Route
+        path="/administration"
+        element={
+          <RequireAuth>
+            <AdminDashboard />
+          </RequireAuth>
+        }
+      />
       {/* Toute route inconnue renvoie vers /login. */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

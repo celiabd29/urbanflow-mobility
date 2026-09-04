@@ -36,6 +36,8 @@ urlpatterns = [
     path('api/carbon/', include('carbon.urls')),
     # Signalement d'incidents (FC2).
     path('api/signalements/', include('incidents.urls')),
+    # Tableau de bord d'administration sur-mesure (réservé au staff).
+    path('api/admin/', include('users.admin_urls')),
     # Diagnostic : quelle base tourne réellement en production.
     path('api/health/', health_view, name='health'),
 ]

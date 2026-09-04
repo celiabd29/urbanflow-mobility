@@ -71,9 +71,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "email", "first_name", "last_name", "transport_preferences")
-        # Ces champs sont en lecture seule : on ne les modifie pas via ce serializer.
-        read_only_fields = ("id", "email")
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "transport_preferences",
+            # Exposés en lecture seule : le frontend s'en sert pour afficher (ou
+            # non) l'accès au tableau de bord d'administration.
+            "is_staff",
+            "is_superuser",
+        )
+        # Ces champs sont en lecture seule : on ne les modifie pas via ce
+        # serializer. is_staff/is_superuser en particulier ne doivent JAMAIS
+        # être modifiables par l'utilisateur lui-même (élévation de privilège).
+        read_only_fields = ("id", "email", "is_staff", "is_superuser")
 
     def validate_transport_preferences(self, value):
         return validate_transport_preferences_payload(value)

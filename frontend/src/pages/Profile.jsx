@@ -197,6 +197,27 @@ export default function Profile() {
           </p>
         </section>
 
+        {/* Accès au tableau de bord d'administration, réservé aux comptes staff. */}
+        {me?.is_staff && (
+          <Link
+            to="/administration"
+            className="mt-6 flex items-center gap-4 rounded-3xl border border-[#0F7B58]/20 bg-white p-4 shadow-sm transition hover:border-[#0F7B58]/40"
+          >
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#0F7B58]/10">
+              <ShieldCheck className="size-5 text-[#0F7B58]" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-slate-900">
+                Administration
+              </span>
+              <span className="block text-xs text-slate-500">
+                Gérer les comptes et consulter les statistiques
+              </span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-slate-500" aria-hidden="true" />
+          </Link>
+        )}
+
         {/* Paramètres : présents à l'écran, mais annoncés comme non actifs. */}
         <section className="mt-6">
           <h2 className="text-base font-semibold text-slate-900">Paramètres</h2>
