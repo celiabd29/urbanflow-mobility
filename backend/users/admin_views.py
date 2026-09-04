@@ -88,7 +88,7 @@ def admin_users_view(request):
 def admin_user_detail_view(request, pk):
     """
     GET    /api/admin/users/<pk>/ : détail + habitudes de déplacement.
-    PATCH  : { "is_active"?, "is_staff"? } — suspendre/réactiver, passer admin.
+    PATCH  : { "is_active"?, "is_staff"? } : suspendre/réactiver, passer admin.
     DELETE : suppression du compte.
     """
     try:
