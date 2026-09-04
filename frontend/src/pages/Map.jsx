@@ -18,6 +18,7 @@ import { estimateFootprint, routeToSegments, saveTrajet } from '@/lib/carbon'
 import { buildNavSteps, distanceMeters } from '@/lib/navigation'
 import { getBikeAvailability } from '@/lib/transport'
 import { networkFirst, readCache, saveCache } from '@/lib/offlineStore'
+import { isGeolocationEnabled } from '@/lib/privacy'
 import { onPendingChanged } from '@/lib/reportSync'
 import {
   MODE_TO_PROFILE,
@@ -476,6 +477,14 @@ export default function MapPage() {
   }, [])
 
   useEffect(() => {
+    // Réglage de confidentialité : si la géoloc est désactivée, on ne la
+    // demande pas du tout (carte centrée sur Paris).
+    if (!isGeolocationEnabled()) {
+      setStatus('error')
+      setMessage('Géolocalisation désactivée dans les réglages. Carte centrée sur Paris.')
+      return
+    }
+
     if (!('geolocation' in navigator)) {
       setStatus('error')
       setMessage("La géolocalisation n'est pas supportée par ce navigateur.")
@@ -505,7 +514,7 @@ export default function MapPage() {
   // Version simple : pas de recalcul d'itinéraire, la navigation manuelle
   // (boutons Précédent/Suivant) reste toujours disponible en parallèle.
   useEffect(() => {
-    if (!navigating || !('geolocation' in navigator)) return
+    if (!navigating || !isGeolocationEnabled() || !('geolocation' in navigator)) return
     const ADVANCE_M = 30
     const id = navigator.geolocation.watchPosition(
       (pos) => {

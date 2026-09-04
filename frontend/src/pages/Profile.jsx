@@ -16,6 +16,7 @@ import {
 import api, { tokenStore } from '@/lib/api'
 import { formatCo2 } from '@/lib/carbon'
 import { extractError } from '@/lib/routing'
+import { isGeolocationEnabled, setGeolocationEnabled } from '@/lib/privacy'
 import BottomNav from '@/components/BottomNav'
 
 // Mêmes identifiants que TRANSPORT_MODES côté Django.
@@ -27,13 +28,9 @@ const MODES = [
   { value: 'walk', label: 'Marche', icon: Footprints },
 ]
 
-// Réglages présents sur la maquette mais non implémentés : ils restent
-// visibles et explicitement annoncés comme à venir, plutôt que de simuler
-// des écrans qui n'existent pas.
-const SETTINGS = [
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'confidentialite', label: 'Confidentialité', icon: ShieldCheck },
-]
+// Réglage encore à venir : reste visible mais annoncé comme tel, plutôt que
+// de simuler un écran qui n'existe pas.
+const SETTINGS = [{ id: 'notifications', label: 'Notifications', icon: Bell }]
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -41,6 +38,14 @@ export default function Profile() {
   const [stats, setStats] = useState({ trajets: 0, co2: 0 })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  // Réglage de confidentialité : autorisation de la géolocalisation (appareil).
+  const [geoEnabled, setGeoEnabled] = useState(isGeolocationEnabled)
+
+  function toggleGeolocation() {
+    const next = !geoEnabled
+    setGeolocationEnabled(next)
+    setGeoEnabled(next)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -240,7 +245,44 @@ export default function Profile() {
                 </span>
               </button>
             ))}
+
+            {/* Confidentialité : autorisation de la géolocalisation (réel). */}
+            <div className="flex items-center justify-between px-4 py-4">
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#0F7B58]/10">
+                  <ShieldCheck className="size-4 text-[#0F7B58]" aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-slate-800">
+                    Géolocalisation
+                  </span>
+                  <span className="block text-[11px] text-slate-500">
+                    Autoriser l&apos;app à utiliser ma position
+                  </span>
+                </span>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={geoEnabled}
+                aria-label="Autoriser la géolocalisation"
+                onClick={toggleGeolocation}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                  geoEnabled ? 'bg-[#1D9E75]' : 'bg-slate-200'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 size-5 rounded-full bg-white shadow transition-all ${
+                    geoEnabled ? 'left-6' : 'left-1'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
+          <p className="mt-2 px-1 text-[11px] text-slate-500">
+            Désactivée, l&apos;app ne demande pas votre position : la carte reste
+            centrée sur Paris.
+          </p>
         </section>
 
         {error && (

@@ -4,6 +4,7 @@ import { Bike, Bus, Car, ChevronRight, Footprints, Leaf, MapPin, Search, TrainFr
 import api from '@/lib/api'
 import { MODE_PRESENTATION, deleteTrajet, formatCo2 } from '@/lib/carbon'
 import { networkFirst, readCache, saveCache } from '@/lib/offlineStore'
+import { isGeolocationEnabled } from '@/lib/privacy'
 import BottomNav from '@/components/BottomNav'
 import OfflineBadge from '@/components/OfflineBadge'
 import TripDeleteButton from '@/components/TripDeleteButton'
@@ -45,7 +46,8 @@ export default function Home() {
   const [weatherPoint, setWeatherPoint] = useState(PARIS_POINT)
 
   useEffect(() => {
-    if (!('geolocation' in navigator)) return
+    // Respecte le réglage de confidentialité : pas de position si désactivé.
+    if (!isGeolocationEnabled() || !('geolocation' in navigator)) return
     navigator.geolocation.getCurrentPosition(
       (pos) => setWeatherPoint({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
       () => {}, // refus ou erreur : on garde Paris, sans déranger l'utilisateur
