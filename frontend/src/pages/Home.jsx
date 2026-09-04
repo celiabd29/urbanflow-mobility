@@ -5,6 +5,8 @@ import api from '@/lib/api'
 import { MODE_PRESENTATION, deleteTrajet, formatCo2 } from '@/lib/carbon'
 import { networkFirst, readCache, saveCache } from '@/lib/offlineStore'
 import { isGeolocationEnabled } from '@/lib/privacy'
+import { isNotificationsEnabled, maybeNotifyDisruptions } from '@/lib/notifications'
+import { getDisruptions } from '@/lib/transport'
 import BottomNav from '@/components/BottomNav'
 import OfflineBadge from '@/components/OfflineBadge'
 import TripDeleteButton from '@/components/TripDeleteButton'
@@ -53,6 +55,18 @@ export default function Home() {
       () => {}, // refus ou erreur : on garde Paris, sans déranger l'utilisateur
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 },
     )
+  }, [])
+
+  useEffect(() => {
+    // À l'ouverture de l'app : si les notifications sont activées, on alerte des
+    // perturbations sur les lignes du profil (le backend retombe sur les modes
+    // déclarés). Déduplication par appareil : pas de doublon à chaque visite.
+    if (!isNotificationsEnabled()) return
+    const controller = new AbortController()
+    getDisruptions(undefined, { signal: controller.signal })
+      .then(maybeNotifyDisruptions)
+      .catch(() => {}) // perturbations indisponibles : sans notification
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {

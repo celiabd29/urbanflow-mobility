@@ -17,6 +17,12 @@ import api, { tokenStore } from '@/lib/api'
 import { formatCo2 } from '@/lib/carbon'
 import { extractError } from '@/lib/routing'
 import { isGeolocationEnabled, setGeolocationEnabled } from '@/lib/privacy'
+import {
+  disableNotifications,
+  enableNotifications,
+  notificationsPreferred,
+  supportsNotifications,
+} from '@/lib/notifications'
 import BottomNav from '@/components/BottomNav'
 
 // Mêmes identifiants que TRANSPORT_MODES côté Django.
@@ -28,10 +34,6 @@ const MODES = [
   { value: 'walk', label: 'Marche', icon: Footprints },
 ]
 
-// Réglage encore à venir : reste visible mais annoncé comme tel, plutôt que
-// de simuler un écran qui n'existe pas.
-const SETTINGS = [{ id: 'notifications', label: 'Notifications', icon: Bell }]
-
 export default function Profile() {
   const navigate = useNavigate()
   const [me, setMe] = useState(null)
@@ -40,11 +42,37 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   // Réglage de confidentialité : autorisation de la géolocalisation (appareil).
   const [geoEnabled, setGeoEnabled] = useState(isGeolocationEnabled)
+  // Notifications de perturbations : préférence par appareil, désactivées par
+  // défaut (elles réclament la permission du navigateur).
+  const [notifsEnabled, setNotifsEnabled] = useState(notificationsPreferred)
+  const [notifHint, setNotifHint] = useState('')
 
   function toggleGeolocation() {
     const next = !geoEnabled
     setGeolocationEnabled(next)
     setGeoEnabled(next)
+  }
+
+  async function toggleNotifications() {
+    setNotifHint('')
+    if (notifsEnabled) {
+      disableNotifications()
+      setNotifsEnabled(false)
+      return
+    }
+    if (!supportsNotifications()) {
+      setNotifHint("Votre navigateur ne prend pas en charge les notifications.")
+      return
+    }
+    // Demande la permission au navigateur : on ne l'active que si elle est accordée.
+    const permission = await enableNotifications()
+    if (permission === 'granted') {
+      setNotifsEnabled(true)
+    } else if (permission === 'denied') {
+      setNotifHint(
+        'Notifications bloquées par le navigateur. Autorisez-les dans ses réglages pour ce site.',
+      )
+    }
   }
 
   useEffect(() => {
@@ -223,28 +251,42 @@ export default function Profile() {
           </Link>
         )}
 
-        {/* Paramètres : présents à l'écran, mais annoncés comme non actifs. */}
+        {/* Paramètres réels : notifications et confidentialité. */}
         <section className="mt-6">
           <h2 className="text-base font-semibold text-slate-900">Paramètres</h2>
-          <div className="mt-3 flex flex-col rounded-3xl border border-slate-100 bg-white shadow-sm">
-            {SETTINGS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                disabled
-                className="flex cursor-not-allowed items-center justify-between border-b border-slate-100 px-4 py-4 text-left last:border-b-0"
-              >
-                <span className="flex items-center gap-3 text-sm font-medium text-slate-500">
-                  <span className="flex size-9 items-center justify-center rounded-full bg-slate-100">
-                    <Icon className="size-4 text-slate-500" aria-hidden="true" />
+          <div className="mt-3 flex flex-col divide-y divide-slate-100 rounded-3xl border border-slate-100 bg-white shadow-sm">
+            {/* Notifications de perturbations sur les lignes de l'utilisateur. */}
+            <div className="flex items-center justify-between px-4 py-4">
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#0F7B58]/10">
+                  <Bell className="size-4 text-[#0F7B58]" aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-slate-800">
+                    Notifications
                   </span>
-                  {label}
+                  <span className="block text-[11px] text-slate-500">
+                    M&apos;alerter des perturbations sur mes lignes
+                  </span>
                 </span>
-                <span className="text-[11px] font-medium text-slate-500">
-                  Bientôt disponible
-                </span>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={notifsEnabled}
+                aria-label="Activer les notifications"
+                onClick={toggleNotifications}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                  notifsEnabled ? 'bg-[#1D9E75]' : 'bg-slate-200'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 size-5 rounded-full bg-white shadow transition-all ${
+                    notifsEnabled ? 'left-6' : 'left-1'
+                  }`}
+                />
               </button>
-            ))}
+            </div>
 
             {/* Confidentialité : autorisation de la géolocalisation (réel). */}
             <div className="flex items-center justify-between px-4 py-4">
@@ -283,6 +325,9 @@ export default function Profile() {
             Désactivée, l&apos;app ne demande pas votre position : la carte reste
             centrée sur Paris.
           </p>
+          {notifHint && (
+            <p className="mt-2 px-1 text-[11px] text-amber-600">{notifHint}</p>
+          )}
         </section>
 
         {error && (

@@ -7,6 +7,7 @@ import {
   getDisruptions,
 } from '@/lib/transport'
 import { extractError } from '@/lib/routing'
+import { maybeNotifyDisruptions } from '@/lib/notifications'
 
 const MAX_VISIBLE = 3
 
@@ -39,7 +40,12 @@ export default function DisruptionAlert({
 
     const controller = new AbortController()
     getDisruptions(modes, { signal: controller.signal })
-      .then(setData)
+      .then((result) => {
+        setData(result)
+        // Alerte l'utilisateur si les notifications sont activées (perturbations
+        // encore jamais vues sur cet appareil).
+        maybeNotifyDisruptions(result)
+      })
       .catch((err) => {
         const message = extractError(err, 'Perturbations indisponibles.')
         if (message) setError(message)
