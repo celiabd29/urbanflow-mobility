@@ -38,14 +38,26 @@ def _headers():
 # commune lointaine plutôt que vers la région parisienne visée par l'app.
 PARIS_FOCUS = (2.3522, 48.8566)  # (lon, lat)
 
+# Emprise (bounding box) de l'Île-de-France, avec une marge. L'app ne couvre que
+# cette région (transport en commun PRIM, Vélib') : sans cette restriction, une
+# adresse portant un nom présent ailleurs (« rue de la Gare » à Lille) pouvait
+# être résolue dans le nord de la France, envoyant l'itinéraire hors zone (et
+# faisant échouer PRIM en 404). On borne donc les résultats à l'Île-de-France.
+IDF_BBOX = {
+    'min_lon': 1.40,
+    'min_lat': 48.10,
+    'max_lon': 3.60,
+    'max_lat': 49.25,
+}
+
 
 def geocode(query, limit=5, focus=None):
     """
     Convertit une adresse en liste de coordonnées candidates.
 
     `focus` (lon, lat) biaise le classement des résultats vers ce point (par
-    défaut Paris) : les adresses proches remontent en tête, sans pour autant
-    exclure le reste de la France.
+    défaut Paris) : les adresses proches remontent en tête. Les résultats sont
+    par ailleurs bornés à l'Île-de-France (IDF_BBOX), la seule zone couverte.
     """
     focus_lon, focus_lat = focus or PARIS_FOCUS
     try:
@@ -55,6 +67,11 @@ def geocode(query, limit=5, focus=None):
                 'text': query,
                 'size': limit,
                 'boundary.country': 'FR',
+                # Restreint les résultats à l'emprise Île-de-France.
+                'boundary.rect.min_lon': IDF_BBOX['min_lon'],
+                'boundary.rect.min_lat': IDF_BBOX['min_lat'],
+                'boundary.rect.max_lon': IDF_BBOX['max_lon'],
+                'boundary.rect.max_lat': IDF_BBOX['max_lat'],
                 'focus.point.lon': focus_lon,
                 'focus.point.lat': focus_lat,
             },

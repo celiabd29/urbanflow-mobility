@@ -193,24 +193,36 @@ def journeys(start, end, accessible=False):
         # Paramètre Navitia : ne retient que les correspondances accessibles.
         params["wheelchair"] = "true"
 
-    payload = fetch_json(
-        PRIM_JOURNEYS_URL,
-        params=params,
-        headers={"apikey": api_key},
-        # La clé de cache inclut l'accessibilité : les deux variantes d'un même
-        # trajet ne doivent pas se mélanger.
-        cache_key=f"prim:journeys:{start_param}:{end_param}:{int(accessible)}",
+    # Message unique quand aucun itinéraire n'existe : Navitia répond tantôt un
+    # 404, tantôt un 200 avec une liste vide (souvent parce qu'un point est hors
+    # Île-de-France). On présente les deux cas de la même façon, sans exposer un
+    # « a répondu 404 » brut à l'utilisateur.
+    no_journey = TransportAPIError(
+        "Aucun itinéraire en transport en commun trouvé pour ce trajet. "
+        "Ce service ne couvre que l'Île-de-France.",
+        status=404,
         source="Île-de-France Mobilités",
     )
 
-    raw_journeys = payload.get("journeys") or []
-    if not raw_journeys:
-        raise TransportAPIError(
-            "Aucun itinéraire en transport en commun trouvé. "
-            "Ce service ne couvre que l'Île-de-France.",
-            status=404,
+    try:
+        payload = fetch_json(
+            PRIM_JOURNEYS_URL,
+            params=params,
+            headers={"apikey": api_key},
+            # La clé de cache inclut l'accessibilité : les deux variantes d'un
+            # même trajet ne doivent pas se mélanger.
+            cache_key=f"prim:journeys:{start_param}:{end_param}:{int(accessible)}",
             source="Île-de-France Mobilités",
         )
+    except TransportAPIError as exc:
+        # Un 404 de Navitia signifie « pas d'itinéraire », pas une panne.
+        if getattr(exc, "upstream_status", None) == 404:
+            raise no_journey from exc
+        raise
+
+    raw_journeys = payload.get("journeys") or []
+    if not raw_journeys:
+        raise no_journey
 
     disruptions_by_id = {
         item["id"]: _normalise_disruption(item)

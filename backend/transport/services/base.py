@@ -20,13 +20,16 @@ class TransportAPIError(Exception):
     lisible, plutôt que de laisser remonter une 500 opaque.
     """
 
-    def __init__(self, message, source=None, status=503):
+    def __init__(self, message, source=None, status=503, upstream_status=None):
         super().__init__(message)
         self.message = message
         self.source = source
         # 503 par défaut (panne externe). Certains cas méritent un autre code,
         # par exemple 404 quand aucun itinéraire n'existe dans la zone couverte.
         self.status = status
+        # Code HTTP renvoyé par l'API externe (le cas échéant) : permet à
+        # l'appelant de distinguer un 404 « aucun résultat » d'une vraie panne.
+        self.upstream_status = upstream_status
 
 
 def fetch_json(url, *, params=None, headers=None, cache_key=None, source=None):
@@ -56,6 +59,7 @@ def fetch_json(url, *, params=None, headers=None, cache_key=None, source=None):
         raise TransportAPIError(
             f"Le service {source or 'externe'} a répondu {response.status_code}.",
             source=source,
+            upstream_status=response.status_code,
         )
 
     try:
