@@ -8,12 +8,13 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import BottomNav from '@/components/BottomNav'
+import GuestSheet from '@/components/GuestSheet'
 import NavigationBanner from '@/components/NavigationBanner'
 import NavigationSheet from '@/components/NavigationSheet'
 import OfflineBadge from '@/components/OfflineBadge'
 import RouteSheet, { NAV_HEIGHT } from '@/components/RouteSheet'
 import SearchOverlay from '@/components/SearchOverlay'
-import api from '@/lib/api'
+import api, { tokenStore } from '@/lib/api'
 import { estimateFootprint, routeToSegments, saveTrajet } from '@/lib/carbon'
 import { buildNavSteps, distanceMeters } from '@/lib/navigation'
 import { getBikeAvailability } from '@/lib/transport'
@@ -384,6 +385,11 @@ export default function MapPage() {
   const navSteps = useMemo(() => buildNavSteps(activeRoute, profile), [activeRoute, profile])
   const currentStep = navSteps[stepIndex] || null
 
+  // Visiteur non connecté : la carte et les signalements restent consultables,
+  // mais les fonctions qui exigent un compte (calcul d'itinéraire, Vélib',
+  // signalement) sont masquées et remplacées par une invitation à se connecter.
+  const isGuest = !tokenStore.getAccess()
+
   const sheetHeight = expanded ? maxHeight : COLLAPSED_HEIGHT
 
   useEffect(() => {
@@ -396,11 +402,12 @@ export default function MapPage() {
   // 'wheelchair' n'est plus un mode à part : l'accessibilité est un réglage du
   // profil qui adapte la marche et les transports. On le retire des chips.
   useEffect(() => {
+    if (isGuest) return // pas de calcul d'itinéraire en visiteur : chips inutiles
     const withoutWheelchair = (list) => list.filter((value) => value !== 'wheelchair')
     getProfiles()
       .then((list) => setProfiles(withoutWheelchair(list)))
       .catch(() => setProfiles(withoutWheelchair(Object.keys(PROFILE_LABELS))))
-  }, [])
+  }, [isGuest])
 
   // Présélection du mode selon la préférence principale du profil (F1) : au
   // chargement, on ouvre la carte sur le mode favori (modes[0]) plutôt que sur
@@ -408,7 +415,7 @@ export default function MapPage() {
   // ni après un choix manuel, et une seule fois. Comportement par défaut
   // conservé si aucune préférence n'est enregistrée (nouveau compte).
   useEffect(() => {
-    if (modeFromHome || prefApplied.current) return
+    if (isGuest || modeFromHome || prefApplied.current) return
     const controller = new AbortController()
     api
       .get('/auth/me/', { signal: controller.signal })
@@ -424,7 +431,7 @@ export default function MapPage() {
       // Hors ligne ou non connecté : on garde le mode par défaut, sans erreur.
       .catch(() => {})
     return () => controller.abort()
-  }, [modeFromHome])
+  }, [isGuest, modeFromHome])
 
   // Resélection d'un trajet passé : on géocode les adresses départ/arrivée
   // reçues en paramètre pour retrouver leurs coordonnées, puis on déclenche un
@@ -803,28 +810,36 @@ export default function MapPage() {
                 <span className="mt-1 block text-slate-500">
                   {formatIncidentDate(incident.date_creation)}
                 </span>
-                <span className="mt-2 flex items-center gap-2">
-                  {/* Confirmation collaborative : +1 vote, compteur en direct. */}
-                  <button
-                    type="button"
-                    onClick={() => handleVoteIncident(incident.id)}
-                    className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#0F7B58] transition hover:bg-[#1D9E75]/20"
-                  >
-                    <ThumbsUp className="size-3.5" aria-hidden="true" />
-                    Confirmer ({incident.votes})
-                  </button>
-                  {/* Suppression réservée à l'auteur du signalement. */}
-                  {incident.is_owner && (
+                {/* Actions collaboratives réservées aux comptes connectés :
+                    un visiteur consulte les signalements mais n'agit pas. */}
+                {isGuest ? (
+                  <span className="mt-2 block text-xs text-slate-500">
+                    {incident.votes} confirmation{incident.votes > 1 ? 's' : ''}
+                  </span>
+                ) : (
+                  <span className="mt-2 flex items-center gap-2">
+                    {/* Confirmation collaborative : +1 vote, compteur en direct. */}
                     <button
                       type="button"
-                      onClick={() => handleDeleteIncident(incident.id)}
-                      className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                      onClick={() => handleVoteIncident(incident.id)}
+                      className="flex items-center gap-1 rounded-full bg-[#1D9E75]/10 px-2.5 py-1 text-xs font-semibold text-[#0F7B58] transition hover:bg-[#1D9E75]/20"
                     >
-                      <Trash2 className="size-3.5" aria-hidden="true" />
-                      Supprimer
+                      <ThumbsUp className="size-3.5" aria-hidden="true" />
+                      Confirmer ({incident.votes})
                     </button>
-                  )}
-                </span>
+                    {/* Suppression réservée à l'auteur du signalement. */}
+                    {incident.is_owner && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteIncident(incident.id)}
+                        className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                      >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
+                        Supprimer
+                      </button>
+                    )}
+                  </span>
+                )}
               </Popup>
             </Marker>
           )
@@ -848,7 +863,7 @@ export default function MapPage() {
               total={navSteps.length}
               onExit={() => setNavigating(false)}
             />
-          ) : (
+          ) : isGuest ? null : (
             <>
               <SearchOverlay
                 phase={phase}
@@ -891,7 +906,7 @@ export default function MapPage() {
         </div>
       )}
 
-      {!navigating && (
+      {!navigating && !isGuest && (
         <>
           {/* Bascule d'affichage des stations de vélos en libre-service. */}
           <button
@@ -923,7 +938,10 @@ export default function MapPage() {
         </>
       )}
 
-      {navigating ? (
+      {isGuest ? (
+        // Visiteur : pas de recherche/calcul, une invitation à se connecter.
+        <GuestSheet height={COLLAPSED_HEIGHT} />
+      ) : navigating ? (
         <NavigationSheet
           steps={navSteps}
           index={stepIndex}

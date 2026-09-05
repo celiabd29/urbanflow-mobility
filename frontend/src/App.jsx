@@ -28,24 +28,17 @@ function App() {
 
   return (
     <Routes>
-      {/* Racine protégée : accueil accessible uniquement si connecté. */}
+      {/* Racine : l'accueil personnalisé est réservé aux comptes connectés.
+          Un visiteur est envoyé vers la carte, en accès libre. */}
       <Route
         path="/"
         element={
-          <RequireAuth>
-            <Home />
-          </RequireAuth>
+          tokenStore.getAccess() ? <Home /> : <Navigate to="/map" replace />
         }
       />
-      {/* Carte interactive (Sprint 2), protégée comme le reste de l'app. */}
-      <Route
-        path="/map"
-        element={
-          <RequireAuth>
-            <MapPage />
-          </RequireAuth>
-        }
-      />
+      {/* Carte interactive : accès libre (consultation). Le calcul d'itinéraire,
+          le signalement et les fonctions personnelles demandent une connexion. */}
+      <Route path="/map" element={<MapPage />} />
       {/* Signalement d'incident (FC2). */}
       <Route
         path="/signaler"
