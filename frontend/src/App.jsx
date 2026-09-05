@@ -4,8 +4,6 @@ import { tokenStore } from '@/lib/api'
 import { initReportSync } from '@/lib/reportSync'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
-import ForgotPassword from '@/pages/ForgotPassword'
-import ResetPassword from '@/pages/ResetPassword'
 import Home from '@/pages/Home'
 import MapPage from '@/pages/Map'
 import MobilityProfile from '@/pages/MobilityProfile'
@@ -94,9 +92,6 @@ function App() {
       />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      {/* Réinitialisation de mot de passe (public, sans email). */}
-      <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
-      <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
       {/* Tableau de bord d'administration : l'écran redirige lui-même les
           non-admins (403 de l'API). */}
       <Route

@@ -60,7 +60,7 @@ export default function Login() {
         </p>
       )}
 
-      {/* Bannière d'information (ex. mot de passe oublié pas encore dispo) */}
+      {/* Bannière d'information générique (messages ponctuels de l'écran). */}
       {info && (
         <p className="mt-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm text-foreground">
           {info}
@@ -115,13 +115,6 @@ export default function Login() {
             </button>
           </div>
         </div>
-
-        <Link
-          to="/mot-de-passe-oublie"
-          className="-mt-1 self-end text-xs font-medium text-[#0F7B58] transition hover:opacity-80"
-        >
-          Mot de passe oublié ?
-        </Link>
 
         <Button
           type="submit"

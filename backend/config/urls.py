@@ -17,17 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from users.views import password_reset_confirm_view, password_reset_request_view
-
 from .health import health_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Routes d'authentification de l'app users, préfixées par /api/auth/.
     path('api/auth/', include('users.urls')),
-    # Réinitialisation de mot de passe (sans email : le token est renvoyé).
-    path('api/users/password-reset/request/', password_reset_request_view),
-    path('api/users/password-reset/confirm/', password_reset_confirm_view),
     # Proxy itinéraires (Sprint 2).
     path('api/routing/', include('routing.urls')),
     # APIs de transport : vélos en libre-service et perturbations (Sprint 3).

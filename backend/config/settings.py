@@ -218,9 +218,6 @@ AUTH_USER_MODEL = 'users.User'
 
 LANGUAGE_CODE = 'en-us'
 
-# Durée de vie des tokens de réinitialisation de mot de passe : 30 minutes.
-PASSWORD_RESET_TIMEOUT = 30 * 60
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
