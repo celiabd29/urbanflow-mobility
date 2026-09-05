@@ -169,12 +169,15 @@ def _normalise_journey(journey, disruptions_by_id):
     }
 
 
-def journeys(start, end):
+def journeys(start, end, accessible=False):
     """
     Itinéraires marche + transport en commun entre deux points [lon, lat].
 
     Renvoie plusieurs propositions, chacune détaillée en sections, avec les
     perturbations rattachées aux lignes réellement empruntées.
+
+    `accessible` : quand vrai, on demande à Navitia des itinéraires adaptés à un
+    fauteuil roulant (stations et correspondances sans marches).
     """
     api_key = getattr(settings, "VELIB_PRIM_API_KEY", "")
     if not api_key:
@@ -185,11 +188,18 @@ def journeys(start, end):
     start_param = f"{start[0]};{start[1]}"
     end_param = f"{end[0]};{end[1]}"
 
+    params = {"from": start_param, "to": end_param}
+    if accessible:
+        # Paramètre Navitia : ne retient que les correspondances accessibles.
+        params["wheelchair"] = "true"
+
     payload = fetch_json(
         PRIM_JOURNEYS_URL,
-        params={"from": start_param, "to": end_param},
+        params=params,
         headers={"apikey": api_key},
-        cache_key=f"prim:journeys:{start_param}:{end_param}",
+        # La clé de cache inclut l'accessibilité : les deux variantes d'un même
+        # trajet ne doivent pas se mélanger.
+        cache_key=f"prim:journeys:{start_param}:{end_param}:{int(accessible)}",
         source="Île-de-France Mobilités",
     )
 

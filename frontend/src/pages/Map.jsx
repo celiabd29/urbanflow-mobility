@@ -393,10 +393,13 @@ export default function MapPage() {
   }, [])
 
   // Les modes viennent du serveur ; repli sur la liste locale si l'appel échoue.
+  // 'wheelchair' n'est plus un mode à part : l'accessibilité est un réglage du
+  // profil qui adapte la marche et les transports. On le retire des chips.
   useEffect(() => {
+    const withoutWheelchair = (list) => list.filter((value) => value !== 'wheelchair')
     getProfiles()
-      .then(setProfiles)
-      .catch(() => setProfiles(Object.keys(PROFILE_LABELS)))
+      .then((list) => setProfiles(withoutWheelchair(list)))
+      .catch(() => setProfiles(withoutWheelchair(Object.keys(PROFILE_LABELS))))
   }, [])
 
   // Présélection du mode selon la préférence principale du profil (F1) : au

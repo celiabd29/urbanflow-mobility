@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Leaf } from 'lucide-react'
+import { Accessibility, ChevronDown, ChevronUp, Leaf } from 'lucide-react'
 import BikeAvailability from '@/components/BikeAvailability'
 import DisruptionAlert from '@/components/DisruptionAlert'
 import JourneySteps from '@/components/JourneySteps'
@@ -120,6 +120,14 @@ export default function RouteSheet({
             onChange={onProfileChange}
             disabled={loading}
           />
+        )}
+
+        {/* Itinéraire adapté à la mobilité réduite (réglage du profil). */}
+        {isResult && result?.accessible && (
+          <p className="mt-3 flex items-center gap-2 rounded-xl bg-[#0F7B58]/10 px-3 py-2 text-xs font-medium text-[#0F7B58]">
+            <Accessibility className="size-4 shrink-0" aria-hidden="true" />
+            Itinéraire adapté (mobilité réduite)
+          </p>
         )}
 
         {error && (

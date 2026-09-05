@@ -105,10 +105,15 @@ def directions_view(request):
                 status=400,
             )
 
+    # Préférence d'accessibilité (mobilité réduite) du profil : quand elle est
+    # active, marche et transport en commun sont calculés en version adaptée.
+    prefs = getattr(request.user, 'transport_preferences', None) or {}
+    accessible = bool(prefs.get('prefer_accessible'))
+
     # Transport en commun : moteur PRIM/Navitia au lieu d'ORS.
     if profile == TRANSIT_PROFILE:
         try:
-            options = transit_journeys(list(start), list(end))
+            options = transit_journeys(list(start), list(end), accessible=accessible)
         except TransportAPIError as exc:
             return Response(
                 {'detail': exc.message, 'source': exc.source},
@@ -128,11 +133,21 @@ def directions_view(request):
                 # Les trajets contiennent des lignes : les perturbations
                 # renvoyées concernent bien CET itinéraire.
                 'route_disruptions_known': True,
+                # Indique au front que l'itinéraire a été adapté (badge).
+                'accessible': accessible,
             }
         )
 
+    # À pied + accessibilité : on route avec le profil fauteuil d'ORS (évite
+    # escaliers, pentes fortes et revêtements inadaptés). Sans effet pour vélo
+    # et voiture, où l'accessibilité piétonne n'a pas de sens.
+    routing_profile = profile
+    accessible_applied = accessible and profile == 'foot-walking'
+    if accessible_applied:
+        routing_profile = 'wheelchair'
+
     try:
-        result = directions(list(start), list(end), profile)
+        result = directions(list(start), list(end), routing_profile)
     except RoutingError as exc:
         return Response({'detail': exc.message}, status=exc.status)
 
@@ -143,6 +158,7 @@ def directions_view(request):
             # Un itinéraire ORS ne contient aucune ligne de transport : on ne
             # peut pas savoir si une perturbation le concerne.
             'route_disruptions_known': False,
+            'accessible': accessible_applied,
         }
     )
 

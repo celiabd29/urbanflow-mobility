@@ -60,6 +60,14 @@ def validate_transport_preferences_payload(value):
             }
         )
 
+    # Accessibilité (mobilité réduite) : quand elle est active, les itinéraires
+    # à pied et en transport en commun sont calculés en version adaptée.
+    prefer_accessible = value.get("prefer_accessible")
+    if prefer_accessible is not None and not isinstance(prefer_accessible, bool):
+        raise serializers.ValidationError(
+            {"prefer_accessible": "La préférence d'accessibilité doit être un booléen."}
+        )
+
     return value
 
 

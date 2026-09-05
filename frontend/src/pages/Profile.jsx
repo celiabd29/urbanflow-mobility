@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
+  Accessibility,
   Bell,
   Bike,
   Bus,
@@ -136,6 +137,35 @@ export default function Profile() {
     }
   }
 
+  const preferAccessible = me?.transport_preferences?.prefer_accessible || false
+
+  // Bascule l'accessibilité (mobilité réduite) : quand elle est active, les
+  // itinéraires à pied et en transport en commun sont calculés en version
+  // adaptée. Même schéma optimiste que les modes.
+  async function toggleAccessible() {
+    const next = !preferAccessible
+    setError('')
+    setSaving(true)
+    const previous = me
+    setMe({
+      ...me,
+      transport_preferences: { ...me.transport_preferences, prefer_accessible: next },
+    })
+
+    try {
+      const { data } = await api.patch('/auth/me/', {
+        transport_preferences: { ...me.transport_preferences, prefer_accessible: next },
+      })
+      setMe(data)
+    } catch (err) {
+      setMe(previous)
+      const message = extractError(err, 'Enregistrement impossible.')
+      if (message) setError(message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   function logout() {
     tokenStore.clear()
     navigate('/login')
@@ -227,6 +257,45 @@ export default function Profile() {
           </div>
           <p className="mt-2 px-1 text-[11px] text-slate-500">
             Ces modes déterminent les perturbations qui vous sont signalées.
+          </p>
+
+          {/* Accessibilité : modificateur global des itinéraires à pied et en
+              transport en commun (mobilité réduite). */}
+          <div className="mt-3 flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#0F7B58]/10">
+                <Accessibility className="size-5 text-[#0F7B58]" aria-hidden="true" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-slate-800">
+                  Trajets accessibles
+                </span>
+                <span className="block text-[11px] text-slate-500">
+                  Adapter la marche et les transports (mobilité réduite)
+                </span>
+              </span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={preferAccessible}
+              aria-label="Trajets accessibles"
+              disabled={saving}
+              onClick={toggleAccessible}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-60 ${
+                preferAccessible ? 'bg-[#1D9E75]' : 'bg-slate-200'
+              }`}
+            >
+              <span
+                className={`absolute top-1 size-5 rounded-full bg-white shadow transition-all ${
+                  preferAccessible ? 'left-6' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
+          <p className="mt-2 px-1 text-[11px] text-slate-500">
+            Activé, les itinéraires à pied évitent escaliers et pentes fortes, et
+            les transports privilégient les correspondances sans marches.
           </p>
         </section>
 
